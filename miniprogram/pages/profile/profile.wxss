@@ -1,0 +1,150 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 32rpx 32rpx 140rpx;
+  box-sizing: border-box;
+}
+
+/* User Card */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 36rpx 32rpx;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border);
+  margin-bottom: 32rpx;
+  animation: fadeInUp 0.35s ease-out;
+}
+
+.user-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+
+.user-avatar-placeholder {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user-id {
+  font-size: 20rpx;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-brief {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex-shrink: 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rpx;
+}
+
+.stat-num {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 20rpx;
+  color: var(--text-tertiary);
+}
+
+.stat-divider {
+  width: 1rpx;
+  height: 48rpx;
+  background: var(--border);
+}
+
+/* Section */
+.section {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.restaurant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.restaurant-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1rpx solid var(--border);
+  transition: background 0.15s;
+}
+
+.restaurant-item:active {
+  background: var(--bg-muted);
+}
+
+.restaurant-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  overflow: hidden;
+}
+
+.restaurant-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.restaurant-meta {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+}
+
+.restaurant-arrow {
+  font-size: 32rpx;
+  color: var(--text-tertiary);
+  padding-left: 12rpx;
+}

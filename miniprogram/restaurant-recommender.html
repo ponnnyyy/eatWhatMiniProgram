@@ -1,0 +1,542 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>好味道 — 私藏餐厅推荐</title>
+<style>
+:root {
+  --bg: oklch(97% 0.018 70);
+  --surface: oklch(99% 0.008 70);
+  --fg: oklch(22% 0.02 50);
+  --muted: oklch(50% 0.018 50);
+  --border: oklch(90% 0.014 70);
+  --accent: oklch(64% 0.13 28);
+  --accent-light: oklch(94% 0.04 50);
+  --font-display: Georgia, 'Iowan Old Style', 'Noto Serif SC', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+  --radius: 14px;
+  --tab-h: 60px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font-body);background:#1a1a1a;color:var(--fg);-webkit-font-smoothing:antialiased}
+
+#app{max-width:430px;margin:0 auto;height:100%;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+.status-bar{height:48px;background:var(--bg);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;flex-shrink:0;font-size:15px;font-weight:700;font-family:var(--font-display);letter-spacing:0.02em;color:var(--fg);position:relative;z-index:10}
+.status-bar .time{position:absolute;left:20px;bottom:8px;font-size:12px;font-weight:500;font-family:var(--font-body);color:var(--muted)}
+
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;display:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.screen.active{display:block}
+
+.tab-bar{height:var(--tab-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:color .2s}
+.tab.active{color:var(--accent)}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab span{font-size:10px;font-weight:500}
+
+.home-header{padding:20px 20px 0}
+.greeting{font-size:14px;color:var(--muted);margin-bottom:4px}
+.app-title{font-family:var(--font-display);font-size:28px;font-weight:700;margin-bottom:16px;letter-spacing:-0.01em}
+
+.random-hero{margin:16px 20px;border-radius:var(--radius);overflow:hidden;cursor:pointer;position:relative;background:linear-gradient(135deg, oklch(70% 0.12 30), oklch(55% 0.15 20));padding:28px 24px;color:white;box-shadow:0 4px 20px oklch(64% 0.08 28 / 0.3);transition:transform .2s}
+.random-hero:active{transform:scale(0.98)}
+.random-hero .label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;opacity:.8;margin-bottom:8px}
+.random-hero .cta{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1.3}
+.random-hero .sub{font-size:13px;opacity:.7;margin-top:6px}
+.random-hero .dice-icon{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:48px;height:48px;opacity:.2}
+.random-hero .dice-icon svg{width:100%;height:100%;fill:white;stroke:none}
+
+.category-scroll{display:flex;gap:8px;padding:16px 20px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.category-scroll::-webkit-scrollbar{display:none}
+.cat-pill{flex-shrink:0;padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .2s;-webkit-tap-highlight-color:transparent;user-select:none}
+.cat-pill.active{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+
+.section-title{font-size:16px;font-weight:700;padding:8px 20px 12px;display:flex;align-items:center;gap:6px}
+.section-title .count{font-size:13px;font-weight:400;color:var(--muted)}
+
+.card-list{padding:0 20px 20px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(0.985)}
+.card-img{height:140px;position:relative;overflow:hidden}
+.card-body{padding:14px 16px}
+.card-name{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:6px}
+.card-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.card-meta .cuisine-tag{padding:2px 8px;border-radius:6px;background:var(--accent-light);color:var(--accent);font-weight:500;font-size:11px}
+.card-meta .rating{color:var(--accent);font-weight:600}
+.card-dishes{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5}
+.card-dishes span{color:var(--fg)}
+
+.search-header{padding:16px 20px;position:sticky;top:0;background:var(--bg);z-index:10}
+.search-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.search-box svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;flex-shrink:0}
+.search-box input{flex:1;border:none;outline:none;background:none;font-size:15px;color:var(--fg);font-family:var(--font-body)}
+.search-box input::placeholder{color:oklch(70% 0.01 50)}
+
+.filter-section{padding:0 20px 8px}
+.filter-label{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500}
+.filter-chips{display:flex;flex-wrap:wrap;gap:6px}
+.f-chip{padding:6px 14px;border-radius:8px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.f-chip.active{background:var(--accent-light);border-color:oklch(80% 0.06 40);color:var(--accent)}
+
+.search-results{padding:12px 20px}
+.results-info{font-size:13px;color:var(--muted);margin-bottom:12px}
+
+.map-container{position:relative;height:calc(100vh - 48px - var(--tab-h));overflow:hidden}
+.map-canvas{width:100%;height:100%}
+.map-card{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:16px 20px;max-height:45%;overflow-y:auto;transition:transform .3s}
+.map-card .handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+
+.random-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 48px - var(--tab-h));padding:40px 20px;text-align:center}
+.random-screen .q-mark{font-family:var(--font-display);font-size:80px;color:var(--border);line-height:1;margin-bottom:12px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.random-screen .title{font-size:20px;font-weight:700;margin-bottom:6px}
+.random-screen .subtitle{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.5}
+.roll-btn{width:140px;height:140px;border-radius:50%;border:none;background:linear-gradient(135deg, oklch(70% 0.12 30), oklch(55% 0.16 20));color:white;font-size:18px;font-weight:700;font-family:var(--font-body);cursor:pointer;box-shadow:0 8px 30px oklch(64% 0.1 28 / 0.35);transition:transform .2s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+.roll-btn:active{transform:scale(0.93)}
+.roll-btn.rolling{animation:spin .6s ease-out}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(720deg)}}
+
+.random-result{display:none;width:100%;max-width:340px;text-align:start;animation:slideUp .4s ease-out}
+.random-result.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.random-result .result-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.random-result .result-img{height:160px}
+.random-result .result-body{padding:18px}
+.random-result .result-name{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px}
+.random-result .result-meta{font-size:13px;color:var(--muted);margin-bottom:10px}
+.random-result .result-dishes{font-size:13px;color:var(--fg);margin-bottom:10px}
+.random-result .result-note{font-size:13px;color:var(--muted);font-style:italic;padding:10px 0;border-top:1px solid var(--border);line-height:1.6}
+.re-roll{margin-top:16px;padding:10px 24px;border-radius:100px;border:1px solid var(--border);background:none;color:var(--muted);font-size:14px;font-family:var(--font-body);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.re-roll:active{background:var(--surface)}
+.view-detail-btn{display:inline-block;margin-top:12px;padding:10px 24px;border-radius:100px;border:none;background:var(--fg);color:var(--surface);font-size:14px;font-weight:500;font-family:var(--font-body);cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+.detail-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;background:var(--bg);z-index:300;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+.detail-overlay.show{display:block;animation:detailIn .35s ease-out}
+@keyframes detailIn{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.detail-close{position:sticky;top:0;z-index:10;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:var(--bg)}
+.detail-close button{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--fg);transition:background .2s}
+.detail-close button:active{background:var(--border)}
+.detail-close .visit-date{font-size:12px;color:var(--muted)}
+.detail-hero{height:240px;position:relative}
+.detail-content{padding:24px 20px 40px}
+.detail-name{font-family:var(--font-display);font-size:28px;font-weight:700;margin-bottom:4px}
+.detail-cuisine{display:inline-block;padding:4px 12px;border-radius:8px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:500;margin-bottom:16px}
+.detail-stats{display:flex;gap:24px;margin-bottom:24px}
+.detail-stat{display:flex;flex-direction:column;gap:2px}
+.detail-stat .val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+.detail-stat .lbl{font-size:11px;color:var(--muted)}
+.detail-section{margin-bottom:20px}
+.detail-section h3{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em}
+.detail-section p{font-size:15px;line-height:1.7}
+.dish-pills{display:flex;flex-wrap:wrap;gap:6px}
+.dish-pill{padding:8px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:13px}
+.detail-note{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:16px;font-size:14px;line-height:1.7;color:var(--fg);font-style:italic}
+
+.img-sichuan{background:linear-gradient(135deg,#c0392b,#e67e22)}
+.img-cantonese{background:linear-gradient(135deg,#d4a03c,#e8c86a)}
+.img-japanese{background:linear-gradient(135deg,#e8a0a0,#f0d0c0)}
+.img-hotpot{background:linear-gradient(135deg,#a02020,#d44020)}
+.img-western{background:linear-gradient(135deg,#6b7b3a,#a09060)}
+.img-bbq{background:linear-gradient(135deg,#c07030,#e09050)}
+.img-seafood{background:linear-gradient(135deg,#3070a0,#50a0c0)}
+.img-dessert{background:linear-gradient(135deg,#d080a0,#f0c0d0)}
+.img-noodle{background:linear-gradient(135deg,#c09040,#e0b060)}
+.img-korean{background:linear-gradient(135deg,#a05030,#d07050)}
+.img-se-asian{background:linear-gradient(135deg,#508040,#80a050)}
+.img-shanghainese{background:linear-gradient(135deg,#806040,#b09060)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="status-bar">
+    <span class="time" id="clock"></span>
+    好味道
+  </div>
+
+  <div class="screen active" id="screen-home">
+    <div class="home-header">
+      <div class="greeting" id="greeting"></div>
+      <div class="app-title">私藏餐厅簿</div>
+    </div>
+    <div class="random-hero" onclick="switchTab('random')">
+      <div class="label">✦ 随机推荐</div>
+      <div class="cta">不知道吃什么？</div>
+      <div class="sub">从收藏里随机挑一家，交给命运</div>
+      <div class="dice-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg></div>
+    </div>
+    <div class="category-scroll" id="cats"></div>
+    <div class="section-title">全部餐厅 <span class="count" id="home-count"></span></div>
+    <div class="card-list" id="home-list"></div>
+  </div>
+
+  <div class="screen" id="screen-search">
+    <div class="search-header">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="搜索餐厅名、菜系、商圈…" oninput="doSearch()">
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">菜系</div>
+      <div class="filter-chips" id="cuisineFilters"></div>
+    </div>
+    <div class="filter-section" style="margin-top:8px">
+      <div class="filter-label">价格</div>
+      <div class="filter-chips" id="priceFilters"></div>
+    </div>
+    <div class="search-results">
+      <div class="results-info" id="searchInfo"></div>
+      <div class="card-list" id="search-list" style="padding:0"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-map">
+    <div class="map-container">
+      <canvas class="map-canvas" id="mapCanvas"></canvas>
+      <div class="map-card" id="mapCard">
+        <div class="handle"></div>
+        <div class="section-title" style="padding:0 0 8px">附近餐厅 <span class="count" id="map-count"></span></div>
+        <div class="card-list" id="map-list" style="padding:0"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-random">
+    <div class="random-screen" id="randomPrompt">
+      <div class="q-mark">?</div>
+      <div class="title">选择困难症？</div>
+      <div class="subtitle">从你的私藏餐厅里随机挑一家<br>今天就吃它了</div>
+      <button class="roll-btn" id="rollBtn" onclick="rollRandom()">帮我选</button>
+    </div>
+    <div class="random-result" id="randomResult"></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" data-tab="home" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>首页</span>
+    </div>
+    <div class="tab" data-tab="search" onclick="switchTab('search')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>搜索</span>
+    </div>
+    <div class="tab" data-tab="map" onclick="switchTab('map')">
+      <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span>地图</span>
+    </div>
+    <div class="tab" data-tab="random" onclick="switchTab('random')">
+      <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span>随机</span>
+    </div>
+  </div>
+
+  <div class="detail-overlay" id="detailOverlay"></div>
+</div>
+
+<script>
+const R = [
+  { id:1, name:'蜀味坊', cuisine:'川菜', area:'三里屯', address:'朝阳区三里屯路19号院3层', price:95, rating:4.7, dishes:['水煮鱼','麻婆豆腐','夫妻肺片'], tags:['辣','聚餐'], note:'水煮鱼是招牌，鱼肉嫩滑，麻辣鲜香。工作日中午去不用排队。', date:'2025-03-15', img:'sichuan', map:[180,200] },
+  { id:2, name:'点都德', cuisine:'粤菜', area:'国贸', address:'朝阳区建国门外大街2号B1层', price:128, rating:4.5, dishes:['虾饺','肠粉','叉烧包'], tags:['早茶','精致'], note:'虾饺皮薄馅大，早点去不用等位。周末人多建议预约。', date:'2025-01-22', img:'cantonese', map:[290,160] },
+  { id:3, name:'鮨·心和', cuisine:'日料', area:'亮马桥', address:'朝阳区亮马桥路48号院', price:260, rating:4.8, dishes:['OMAKASE','�的鱼刺身','海胆饭'], tags:['约会','Omakase'], note:'主厨是从东京回来的，海胆甜到哭。适合特殊日子去。', date:'2025-04-02', img:'japanese', map:[320,140] },
+  { id:4, name:'海底捞火锅', cuisine:'火锅', area:'望京', address:'朝阳区望京西路50号3层', price:135, rating:4.3, dishes:['番茄锅底','捞派滑牛肉','虾滑'], tags:['聚会','服务好'], note:'番茄锅底是我的最爱，虾滑必点。排队久但可以美甲。', date:'2024-12-08', img:'hotpot', map:[380,110] },
+  { id:5, name:'TRB Hutong', cuisine:'西餐', area:'什刹海', address:'东城区沙滩北街23号', price:580, rating:4.9, dishes:['法式鹅肝','和牛','焦糖布丁'], tags:['约会','高端'], note:'藏在胡同里的法餐厅，庭院超美，适合纪念日。需要提前一周预订。', date:'2025-02-14', img:'western', map:[200,240] },
+  { id:6, name:'望京小腰', cuisine:'烧烤', area:'望京', address:'朝阳区望京街道望京西园四区', price:72, rating:4.4, dishes:['烤腰子','烤串','烤鸡翅'], tags:['夜宵','接地气'], note:'晚上九点以后去最有氛围，腰子烤得嫩，啤酒管够。', date:'2024-11-15', img:'bbq', map:[370,100] },
+  { id:7, name:'湘爱', cuisine:'湘菜', area:'三里屯', address:'朝阳区三里屯北路19号', price:88, rating:4.6, dishes:['剁椒鱼头','小炒黄牛肉','农家小炒肉'], tags:['辣','下饭'], note:'剁椒鱼头用的是千岛湖鱼头，鲜辣过瘾。每道菜都下饭。', date:'2025-03-28', img:'sichuan', map:[175,210] },
+  { id:8, name:'寿司博多', cuisine:'日料', area:'中关村', address:'海淀区中关村大街15号', price:180, rating:4.5, dishes:['寿司拼盘','味噌汤','天妇罗'], tags:['性价比','一人食'], note:'午市套餐性价比超高，寿司米饭的温度和酸度都恰到好处。', date:'2024-10-20', img:'japanese', map:[120,80] },
+  { id:9, name:'凑凑火锅·茶憩', cuisine:'火锅', area:'合生汇', address:'朝阳区西大望路甲22号合生汇B1', price:118, rating:4.4, dishes:['花胶鸡锅底','大红袍珍珠奶茶','雪花牛肉'], tags:['新式','奶茶'], note:'花胶鸡锅底浓厚，奶茶比很多奶茶店好喝，一举两得。', date:'2025-01-05', img:'hotpot', map:[310,190] },
+  { id:10, name:'老吉堂', cuisine:'本帮菜', area:'国贸', address:'朝阳区建国路89号', price:145, rating:4.6, dishes:['红烧肉','蟹粉豆腐','糖醋小排'], tags:['精致','商务'], note:'红烧肉肥而不腻，入口即化。环境雅致适合商务宴请。', date:'2024-09-18', img:'shanghainese', map:[280,155] },
+  { id:11, name:'莆田餐厅', cuisine:'东南亚', area:'侨福芳草地', address:'朝阳区东大桥路9号芳草地L2', price:165, rating:4.7, dishes:['福建炒面','海蛎煎','荔枝肉'], tags:['米其林','精致'], note:'米其林一星，看似朴素的菜但每道都很讲究。海蛎煎必点。', date:'2025-04-10', img:'se-asian', map:[270,175] },
+  { id:12, name:'七寻·烧肉', cuisine:'日料', area:'朝阳大悦城', address:'朝阳区朝阳北路101号朝阳大悦城7层', price:210, rating:4.5, dishes:['和牛三吃','厚切牛舌','生拌牛肉'], tags:['烧肉','约会'], note:'和牛入口即化，配上白饭绝了。双人套餐分量刚好。', date:'2025-02-22', img:'japanese', map:[330,170] },
+  { id:13, name:'云海肴', cuisine:'东南亚', area:'西单', address:'西城区西单北大街176号', price:78, rating:4.2, dishes:['过桥米线','汽锅鸡','鲜花饼'], tags:['云南','一人食'], note:'过桥米线的汤底鲜美，配菜丰富。冬天吃一碗很治愈。', date:'2024-08-30', img:'se-asian', map:[150,200] },
+  { id:14, name:'比格披萨', cuisine:'西餐', area:'望京', address:'朝阳区望京东路6号', price:68, rating:4.0, dishes:['玛格丽特披萨','凯撒沙拉','提拉米苏'], tags:['平价','朋友聚会'], note:'薄底披萨很正宗，人均不高适合朋友随意聚餐。', date:'2024-07-12', img:'western', map:[385,115] },
+  { id:15, name:'局气', cuisine:'京菜', area:'前门', address:'东城区前门大街45号', price:108, rating:4.5, dishes:['蜂窝煤炒饭','京八件','乾隆白菜'], tags:['老北京','打卡'], note:'装修很有北京味儿，蜂窝煤炒饭造型好看味道也好。带外地朋友来的好选择。', date:'2025-04-20', img:'noodle', map:[190,260] },
+];
+
+const CUISINES = [...new Set(R.map(r=>r.cuisine))].sort();
+const CUISINE_IMGS = {'川菜':'sichuan','粤菜':'cantonese','日料':'japanese','火锅':'hotpot','西餐':'western','烧烤':'bbq','湘菜':'sichuan','本帮菜':'shanghainese','东南亚':'se-asian','京菜':'noodle'};
+
+let activeCat = '全部';
+let searchCuisine = null;
+let searchPrice = null;
+
+function init() {
+  updateClock();
+  setInterval(updateClock, 60000);
+  setGreeting();
+  renderCats();
+  renderHomeList();
+  renderSearchFilters();
+  doSearch();
+  drawMap();
+}
+
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function setGreeting() {
+  const h = new Date().getHours();
+  let g = '晚上好';
+  if (h < 6) g = '夜深了';
+  else if (h < 12) g = '早上好';
+  else if (h < 14) g = '中午好';
+  else if (h < 18) g = '下午好';
+  document.getElementById('greeting').textContent = g + '，今天想吃点什么？';
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  if (name === 'map') setTimeout(drawMap, 50);
+}
+
+function renderCats() {
+  const c = document.getElementById('cats');
+  c.innerHTML = ['全部', ...CUISINES].map(t =>
+    `<div class="cat-pill${t===activeCat?' active':''}" onclick="setCat('${t}')">${t}</div>`
+  ).join('');
+}
+
+function setCat(cat) {
+  activeCat = cat;
+  renderCats();
+  renderHomeList();
+}
+
+function renderHomeList() {
+  const filtered = activeCat === '全部' ? R : R.filter(r => r.cuisine === activeCat);
+  document.getElementById('home-count').textContent = filtered.length + ' 家';
+  document.getElementById('home-list').innerHTML = filtered.map(cardHTML).join('');
+}
+
+function cardHTML(r) {
+  const stars = '★'.repeat(Math.floor(r.rating)) + (r.rating % 1 >= 0.5 ? '½' : '');
+  return `<div class="card" onclick="openDetail(${r.id})">
+    <div class="card-img img-${r.img || CUISINE_IMGS[r.cuisine]}"></div>
+    <div class="card-body">
+      <div class="card-name">${r.name}</div>
+      <div class="card-meta">
+        <span class="cuisine-tag">${r.cuisine}</span>
+        <span class="rating">${stars} ${r.rating}</span>
+        <span>¥${r.price}/人</span>
+        <span>${r.area}</span>
+      </div>
+      <div class="card-dishes">推荐：<span>${r.dishes.join('、')}</span></div>
+    </div>
+  </div>`;
+}
+
+function renderSearchFilters() {
+  document.getElementById('cuisineFilters').innerHTML =
+    CUISINES.map(c => `<div class="f-chip" data-cuisine="${c}" onclick="toggleCuisineFilter(this,'${c}')">${c}</div>`).join('');
+  document.getElementById('priceFilters').innerHTML =
+    ['50以下','50-100','100-200','200以上'].map(p =>
+      `<div class="f-chip" data-price="${p}" onclick="togglePriceFilter(this,'${p}')">${p}</div>`
+    ).join('');
+}
+
+function toggleCuisineFilter(el, c) {
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('#cuisineFilters .f-chip').forEach(e => e.classList.remove('active'));
+  if (!wasActive) { el.classList.add('active'); searchCuisine = c; }
+  else searchCuisine = null;
+  doSearch();
+}
+
+function togglePriceFilter(el, p) {
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('#priceFilters .f-chip').forEach(e => e.classList.remove('active'));
+  if (!wasActive) { el.classList.add('active'); searchPrice = p; }
+  else searchPrice = null;
+  doSearch();
+}
+
+function doSearch() {
+  const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  let results = R;
+  if (q) results = results.filter(r =>
+    r.name.toLowerCase().includes(q) ||
+    r.cuisine.includes(q) ||
+    r.area.includes(q) ||
+    r.dishes.some(d => d.includes(q)) ||
+    (r.tags && r.tags.some(t => t.includes(q)))
+  );
+  if (searchCuisine) results = results.filter(r => r.cuisine === searchCuisine);
+  if (searchPrice) {
+    results = results.filter(r => {
+      if (searchPrice === '50以下') return r.price < 50;
+      if (searchPrice === '50-100') return r.price >= 50 && r.price < 100;
+      if (searchPrice === '100-200') return r.price >= 100 && r.price < 200;
+      return r.price >= 200;
+    });
+  }
+  document.getElementById('searchInfo').textContent = '找到 ' + results.length + ' 家餐厅';
+  document.getElementById('search-list').innerHTML = results.length
+    ? results.map(cardHTML).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:14px">没有找到匹配的餐厅</div>';
+}
+
+function drawMap() {
+  const canvas = document.getElementById('mapCanvas');
+  const container = canvas.parentElement;
+  const w = container.offsetWidth;
+  const h = container.offsetHeight;
+  canvas.width = w * 2;
+  canvas.height = h * 2;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  ctx.fillStyle = '#f0ebe4';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = '#e0d8d0';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+  ctx.strokeStyle = '#d0c8c0';
+  ctx.lineWidth = 3;
+  const majorH = [h*0.3, h*0.5, h*0.7];
+  const majorV = [w*0.25, w*0.5, w*0.75];
+  majorH.forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); });
+  majorV.forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); });
+
+  ctx.beginPath();
+  ctx.moveTo(w * 0.15, 0);
+  ctx.bezierCurveTo(w*0.2, h*0.25, w*0.35, h*0.35, w*0.4, h*0.55);
+  ctx.bezierCurveTo(w*0.45, h*0.7, w*0.3, h*0.85, w*0.35, h);
+  ctx.strokeStyle = '#c0d0e0';
+  ctx.lineWidth = 12;
+  ctx.stroke();
+  ctx.strokeStyle = '#d0dde8';
+  ctx.lineWidth = 8;
+  ctx.stroke();
+
+  const scaleX = w / 450;
+  const scaleY = (h * 0.6) / 320;
+  R.forEach(r => {
+    const x = r.map[0] * scaleX;
+    const y = r.map[1] * scaleY;
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#c07040';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+  });
+
+  document.getElementById('map-count').textContent = R.length + ' 家';
+  document.getElementById('map-list').innerHTML = R.slice(0, 8).map(r =>
+    `<div class="card" style="margin-bottom:10px" onclick="openDetail(${r.id})">
+      <div style="display:flex;gap:12px;padding:12px">
+        <div class="img-${r.img || CUISINE_IMGS[r.cuisine]}" style="width:64px;height:64px;border-radius:10px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;margin-bottom:2px">${r.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${r.cuisine} · ¥${r.price}/人 · ${r.area}</div>
+          <div style="font-size:12px;color:var(--accent);margin-top:2px">★ ${r.rating}</div>
+        </div>
+      </div>
+    </div>`
+  ).join('');
+
+  canvas.onclick = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    let closest = null, minD = Infinity;
+    R.forEach(r => {
+      const rx = r.map[0] * scaleX;
+      const ry = r.map[1] * scaleY;
+      const d = Math.sqrt((cx-rx)**2 + (cy-ry)**2);
+      if (d < 30 && d < minD) { minD = d; closest = r; }
+    });
+    if (closest) openDetail(closest.id);
+  };
+}
+
+function rollRandom() {
+  const btn = document.getElementById('rollBtn');
+  btn.classList.add('rolling');
+  btn.disabled = true;
+
+  setTimeout(() => {
+    btn.classList.remove('rolling');
+    btn.disabled = false;
+
+    const r = R[Math.floor(Math.random() * R.length)];
+    const stars = '★'.repeat(Math.floor(r.rating)) + (r.rating % 1 >= 0.5 ? '½' : '');
+
+    document.getElementById('randomPrompt').style.display = 'none';
+    const result = document.getElementById('randomResult');
+    result.innerHTML = `<div class="result-card">
+      <div class="result-img img-${r.img || CUISINE_IMGS[r.cuisine]}"></div>
+      <div class="result-body">
+        <div class="result-name">${r.name}</div>
+        <div class="result-meta">${r.cuisine} · ${r.area} · ¥${r.price}/人 · ${stars} ${r.rating}</div>
+        <div class="result-dishes">推荐菜：${r.dishes.join('、')}</div>
+        <div class="result-note">"${r.note}"</div>
+        <button class="view-detail-btn" onclick="openDetail(${r.id})">查看详情</button>
+      </div>
+    </div>
+    <button class="re-roll" onclick="reRoll()">不满意？换一家</button>`;
+    result.classList.add('show');
+  }, 700);
+}
+
+function reRoll() {
+  document.getElementById('randomResult').classList.remove('show');
+  document.getElementById('randomResult').innerHTML = '';
+  document.getElementById('randomPrompt').style.display = '';
+}
+
+function openDetail(id) {
+  const r = R.find(x => x.id === id);
+  if (!r) return;
+  const stars = '★'.repeat(Math.floor(r.rating)) + (r.rating % 1 >= 0.5 ? '½' : '');
+  const overlay = document.getElementById('detailOverlay');
+  overlay.innerHTML = `
+    <div class="detail-close">
+      <button onclick="closeDetail()">✕</button>
+      <span class="visit-date">打卡于 ${r.date}</span>
+    </div>
+    <div class="detail-hero img-${r.img || CUISINE_IMGS[r.cuisine]}"></div>
+    <div class="detail-content">
+      <div class="detail-name">${r.name}</div>
+      <div class="detail-cuisine">${r.cuisine} · ${r.area}</div>
+      <div class="detail-stats">
+        <div class="detail-stat"><span class="val">${stars} ${r.rating}</span><span class="lbl">评分</span></div>
+        <div class="detail-stat"><span class="val">¥${r.price}</span><span class="lbl">人均</span></div>
+        <div class="detail-stat"><span class="val">${r.dishes.length}</span><span class="lbl">推荐菜</span></div>
+      </div>
+      <div class="detail-section">
+        <h3>推荐菜</h3>
+        <div class="dish-pills">${r.dishes.map(d => `<span class="dish-pill">${d}</span>`).join('')}</div>
+      </div>
+      <div class="detail-section">
+        <h3>地址</h3>
+        <p>${r.address}</p>
+      </div>
+      ${r.note ? `<div class="detail-section"><h3>我的笔记</h3><div class="detail-note">${r.note}</div></div>` : ''}
+    </div>`;
+  overlay.classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('show');
+}
+
+init();
+</script>
+</body>
+</html>

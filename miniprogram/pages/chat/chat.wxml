@@ -1,0 +1,111 @@
+<view class="chat-container page-enter">
+  <!-- Empty State -->
+  <view wx:if="{{messages.length === 0 && !loading}}" class="empty-state">
+    <view class="empty-avatar">
+      <text class="empty-avatar-text">AI</text>
+    </view>
+    <text class="empty-title">AI 美食顾问</text>
+    <text class="empty-desc">告诉我你的口味偏好、预算或位置<br/>我会为你推荐合适的餐厅</text>
+    <view class="empty-hints">
+      <view class="hint-item" bindtap="selectHint" data-text="推荐一家适合约会的餐厅">
+        <text class="hint-icon">🍽</text>
+        <text>推荐一家适合约会的餐厅</text>
+      </view>
+      <view class="hint-item" bindtap="selectHint" data-text="人均100以内的川菜">
+        <text class="hint-icon">🌶</text>
+        <text>人均100以内的川菜</text>
+      </view>
+      <view class="hint-item" bindtap="selectHint" data-text="珠海吉大附近吃烧鸡">
+        <text class="hint-icon">🍗</text>
+        <text>珠海吉大附近吃烧鸡</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Chat Messages -->
+  <scroll-view wx:if="{{messages.length > 0 || loading}}" scroll-y class="chat-messages" scroll-into-view="{{scrollToView}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
+    <view class="messages-inner">
+      <block wx:for="{{messages}}" wx:key="index">
+        <!-- User Message -->
+        <view wx:if="{{item.role === 'user'}}" class="message-row row-user" id="msg-{{index}}">
+          <view class="bubble bubble-user">
+            <text>{{item.content}}</text>
+          </view>
+          <view class="avatar avatar-user">
+            <text>我</text>
+          </view>
+        </view>
+
+        <!-- AI Message -->
+        <view wx:if="{{item.role === 'ai'}}" class="message-row row-ai" id="msg-{{index}}">
+          <view class="avatar avatar-ai">
+            <text>AI</text>
+          </view>
+          <view class="ai-content">
+            <!-- Intro text -->
+            <view wx:if="{{item.content}}" class="bubble bubble-ai">
+              <text>{{item.content}}</text>
+            </view>
+
+            <!-- Recommendation Cards -->
+            <block wx:if="{{item.recommendations && item.recommendations.length}}">
+              <view wx:for="{{item.recommendations}}" wx:for-item="rec" wx:for-index="recIdx" wx:key="recIdx" class="rec-card">
+                <view class="rec-accent-line"></view>
+                <view class="rec-header">
+                  <text class="rec-name">{{rec.name}}</text>
+                  <text wx:if="{{rec.avgPrice}}" class="rec-price">¥{{rec.avgPrice}}/人</text>
+                </view>
+                <view wx:if="{{rec.city || rec.address}}" class="rec-location">
+                  <text wx:if="{{rec.city}}" class="rec-city">{{rec.city}}</text>
+                  <text wx:if="{{rec.address}}" class="rec-address">{{rec.address}}</text>
+                </view>
+                <text wx:if="{{rec.description}}" class="rec-desc">{{rec.description}}</text>
+                <view wx:if="{{rec.recommendedDishes}}" class="rec-dishes">
+                  <text class="rec-dishes-label">推荐菜品</text>
+                  <text class="rec-dishes-text">{{rec.recommendedDishes}}</text>
+                </view>
+                <view wx:if="{{rec.reason}}" class="rec-reason">
+                  <text class="rec-reason-icon">💡</text>
+                  <text class="rec-reason-text">{{rec.reason}}</text>
+                </view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+
+      <!-- Typing Indicator -->
+      <view wx:if="{{loading}}" class="message-row row-ai typing-row" id="msg-typing">
+        <view class="avatar avatar-ai">
+          <text>AI</text>
+        </view>
+        <view class="bubble bubble-ai typing-bubble">
+          <view class="typing-dots">
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Input Area -->
+  <view class="input-area">
+    <view class="input-wrap">
+      <input
+        class="chat-input"
+        placeholder="告诉我你想吃什么..."
+        placeholder-class="input-placeholder"
+        value="{{inputText}}"
+        bindinput="onInput"
+        bindconfirm="sendMessage"
+        confirm-type="send"
+        adjust-position="{{true}}"
+      />
+    </view>
+    <view class="send-btn {{inputText ? 'active' : ''}}" bindtap="sendMessage">
+      <text class="send-icon">↑</text>
+    </view>
+  </view>
+</view>

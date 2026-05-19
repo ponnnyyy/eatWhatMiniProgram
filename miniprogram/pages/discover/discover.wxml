@@ -1,0 +1,31 @@
+<view class="discover-page page-enter">
+  <!-- Prompt section -->
+  <view class="prompt-section" wx:if="{{!result}}">
+    <text class="prompt-icon">?</text>
+    <text class="prompt-text">选择困难症？</text>
+    <text class="prompt-sub">从你的私藏餐厅里随机挑一家\n今天就吃它了</text>
+  </view>
+
+  <!-- Discover button -->
+  <view class="discover-btn {{loading ? 'loading' : ''}}" bind:tap="handleDiscover">
+    <text class="btn-text">{{loading ? '...' : '帮我选'}}</text>
+  </view>
+
+  <!-- Result card -->
+  <view class="result-card" wx:if="{{result}}">
+    <view class="result-accent-line"></view>
+    <view class="result-inner">
+      <text class="result-badge">今日推荐</text>
+      <text class="result-name">{{result.name}}</text>
+      <view class="result-meta">
+        <text>{{result.city}} · ¥{{result.avgPrice}}/人</text>
+      </view>
+      <view class="result-reason" wx:if="{{result.recommendReason}}">
+        <text>"{{result.recommendReason}}"</text>
+      </view>
+      <view class="result-details">
+        <text wx:if="{{result.description}}">{{result.description}}</text>
+      </view>
+    </view>
+  </view>
+</view>

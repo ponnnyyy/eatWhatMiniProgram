@@ -1,0 +1,112 @@
+<view class="stats-page page-enter">
+  <!-- Loading state -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <block wx:if="{{!loading && statsData}}">
+    <!-- Overview cards -->
+    <view class="overview-cards">
+      <view class="stat-card">
+        <view class="stat-icon" style="background: var(--accent-light); color: var(--accent);">
+          <text>R</text>
+        </view>
+        <view class="stat-info">
+          <text class="stat-label">收录餐厅</text>
+          <text class="stat-value">{{statsData.totalRestaurants}}</text>
+          <text class="stat-sub">全部在册</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon" style="background: var(--green-light); color: var(--green);">
+          <text>V</text>
+        </view>
+        <view class="stat-info">
+          <text class="stat-label">打卡次数</text>
+          <text class="stat-value">{{statsData.totalVisits}}</text>
+          <text class="stat-sub">累计到访</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon" style="background: var(--gold-light); color: var(--gold);">
+          <text>★</text>
+        </view>
+        <view class="stat-info">
+          <text class="stat-label">平均评分</text>
+          <text class="stat-value">{{statsData.avgRating}}</text>
+          <text class="stat-sub">综合评价</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon" style="background: var(--accent-light); color: var(--accent);">
+          <text>#</text>
+        </view>
+        <view class="stat-info">
+          <text class="stat-label">最爱标签</text>
+          <text class="stat-value stat-value-text">{{topTag || '-'}}</text>
+          <text class="stat-sub">最常使用</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- City distribution chart -->
+    <view class="chart-card">
+      <view class="chart-title">
+        <text>城市分布</text>
+        <text class="chart-badge">{{statsData.cityDist.length}} 城</text>
+      </view>
+      <view class="bar-row" wx:for="{{statsData.cityDist}}" wx:key="*this" wx:for-index="city" wx:for-item="count">
+        <text class="bar-label">{{city}}</text>
+        <view class="bar-track">
+          <view class="bar-fill" style="width: {{count / maxCityCount * 100}}%"></view>
+        </view>
+        <text class="bar-count">{{count}}</text>
+      </view>
+    </view>
+
+    <!-- Tag distribution -->
+    <view class="chart-card">
+      <view class="chart-title">
+        <text>标签分布</text>
+        <text class="chart-badge">{{statsData.tagDist.length}} 个</text>
+      </view>
+      <view class="tag-cloud">
+        <view class="tag-stat" wx:for="{{statsData.tagDist}}" wx:key="*this" wx:for-index="tag" wx:for-item="count">
+          {{tag}} ({{count}})
+        </view>
+      </view>
+    </view>
+
+    <!-- Monthly trend chart -->
+    <view class="chart-card">
+      <view class="chart-title">
+        <text>月度打卡趋势</text>
+        <text class="chart-badge">按月</text>
+      </view>
+      <view class="trend-row" wx:for="{{trendData}}" wx:key="month">
+        <text class="trend-month">{{item.month}}</text>
+        <view class="trend-track">
+          <view class="trend-fill" style="width: {{item.count / maxTrendCount * 100}}%"></view>
+        </view>
+        <text class="trend-count">{{item.count}}次</text>
+      </view>
+    </view>
+
+    <!-- Check-in ranking -->
+    <view class="chart-card">
+      <view class="chart-title">
+        <text>打卡排行</text>
+      </view>
+      <view class="rank-list">
+        <view class="rank-item" wx:for="{{statsData.topRestaurants}}" wx:key="name">
+          <view class="rank-no {{index < 3 ? 'top' : ''}}">{{index + 1}}</view>
+          <text class="rank-name">{{item.name}}</text>
+          <text class="rank-city">{{item.city}}</text>
+          <text class="rank-count">{{item.visitCount}}次</text>
+          <text wx:if="{{item.avgRating > 0}}" class="rank-rating">{{item.avgRating}}分</text>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

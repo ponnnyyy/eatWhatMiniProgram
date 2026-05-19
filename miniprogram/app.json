@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/restaurant/restaurant",
+    "pages/chat/chat",
+    "pages/discover/discover",
+    "pages/add/add",
+    "pages/profile/profile",
+    "pages/stats/stats"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "好味道",
+    "navigationBarBackgroundColor": "#F5EEE5",
+    "backgroundColor": "#F5EEE5"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#A09890",
+    "selectedColor": "#CC8048",
+    "backgroundColor": "#FCFAF6",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/restaurant/restaurant",
+        "text": "餐厅"
+      },
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "对话"
+      },
+      {
+        "pagePath": "pages/discover/discover",
+        "text": "惊喜"
+      },
+      {
+        "pagePath": "pages/add/add",
+        "text": "添加"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于在地图上显示餐厅位置和选择位置"
+    }
+  },
+  "requiredPrivateInfos": ["chooseLocation"],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

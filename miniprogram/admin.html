@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>好味道 — 后台管理</title>
+<style>
+:root {
+  --bg: oklch(96% 0.014 70);
+  --surface: oklch(100% 0.004 70);
+  --fg: oklch(22% 0.02 50);
+  --muted: oklch(50% 0.018 50);
+  --border: oklch(90% 0.012 70);
+  --accent: oklch(58% 0.14 28);
+  --accent-light: oklch(94% 0.04 50);
+  --accent-surface: oklch(97% 0.02 50);
+  --danger: oklch(55% 0.18 25);
+  --danger-light: oklch(95% 0.04 30);
+  --success: oklch(55% 0.14 150);
+  --success-light: oklch(95% 0.04 150);
+  --font-display: Georgia, 'Iowan Old Style', 'Noto Serif SC', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+  --sidebar-w: 240px;
+  --header-h: 60px;
+  --radius: 10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
+.sidebar-brand{padding:20px 24px;border-bottom:1px solid var(--border)}
+.sidebar-brand h1{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-0.01em}
+.sidebar-brand p{font-size:12px;color:var(--muted);margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-group-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:12px 24px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 24px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-item:hover{color:var(--fg);background:var(--bg)}
+.nav-item.active{color:var(--accent);background:var(--accent-surface);border-left-color:var(--accent)}
+.nav-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sidebar-footer{padding:16px 24px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+.sidebar-footer a{color:var(--accent);text-decoration:none}
+
+.main{margin-left:var(--sidebar-w);min-height:100vh}
+.topbar{height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.topbar-actions .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--accent)}
+
+.page{display:none;padding:28px 32px 40px}
+.page.active{display:block}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-card .stat-label{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px}
+.stat-card .stat-val{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.stat-card .stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.stat-card .stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.stat-card .stat-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.chart-card h3{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.chart-card h3 .badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--accent-light);color:var(--accent)}
+.chart-card canvas{width:100%;display:block}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:10px}
+.toolbar h2{font-size:18px;font-weight:700}
+.search-input{padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font-body);background:var(--surface);color:var(--fg);outline:none;width:240px;transition:border-color .15s}
+.search-input:focus{border-color:var(--accent)}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;font-family:var(--font-body);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--fg);transition:all .15s;display:inline-flex;align-items:center;gap:6px;user-select:none}
+.btn:hover{background:var(--bg)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--accent);color:white;border-color:var(--accent)}
+.btn-primary:hover{opacity:.9}
+.btn-danger{background:var(--danger-light);color:var(--danger);border-color:oklch(85% 0.06 30)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+thead th{font-size:12px;font-weight:600;color:var(--muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;user-select:none;cursor:pointer}
+thead th:hover{color:var(--fg)}
+tbody td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--accent-surface)}
+td .name-cell{font-weight:600;color:var(--fg)}
+td .cuisine-tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:500;background:var(--accent-light);color:var(--accent)}
+td .rating{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+td .price{font-variant-numeric:tabular-nums}
+td .actions{display:flex;gap:6px}
+
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:13px;color:var(--muted)}
+.pagination-btns{display:flex;gap:4px}
+.pagination-btns button{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px;color:var(--fg);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pagination-btns button:hover{background:var(--bg)}
+.pagination-btns button.active{background:var(--accent);color:white;border-color:var(--accent)}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:14px;width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:700}
+.modal-header button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font-body);color:var(--fg);background:var(--bg);outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);min-height:42px;align-items:center;cursor:text}
+.tag-input-wrap:focus-within{border-color:var(--accent)}
+.tag-input-wrap .tag{padding:3px 10px;border-radius:6px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:500;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tag-input-wrap .tag button{background:none;border:none;cursor:pointer;font-size:14px;color:var(--accent);padding:0;line-height:1}
+.tag-input-wrap input{border:none;outline:none;background:none;font-size:13px;font-family:var(--font-body);color:var(--fg);flex:1;min-width:80px}
+
+.cat-page-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.cat-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.cat-section h3{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;transition:background .15s}
+.cat-item:hover{background:var(--bg)}
+.cat-item .cat-info{display:flex;align-items:center;gap:10px}
+.cat-item .cat-name{font-size:14px;font-weight:500}
+.cat-item .cat-count{font-size:12px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:10px}
+.cat-item .cat-actions{display:flex;gap:4px}
+.cat-add-form{display:flex;gap:8px;margin-bottom:16px}
+.cat-add-form input{flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font-body);background:var(--bg);color:var(--fg);outline:none}
+.cat-add-form input:focus{border-color:var(--accent)}
+
+.visitor-table{margin-top:8px}
+.visitor-table td .device-pill{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:500}
+.visitor-table td .device-pill.ios{background:oklch(94% 0.02 250);color:oklch(45% 0.02 250)}
+.visitor-table td .device-pill.android{background:oklch(94% 0.04 150);color:oklch(45% 0.04 150)}
+.visitor-table td .device-pc{background:oklch(94% 0.02 60);color:oklch(45% 0.02 60)}
+.visitor-table td .page-views{font-variant-numeric:tabular-nums}
+
+.toast{position:fixed;bottom:32px;right:32px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:600;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--success-light);color:var(--success);border:1px solid oklch(85% 0.06 150)}
+.toast.error{background:var(--danger-light);color:var(--danger);border:1px solid oklch(85% 0.06 30)}
+
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:550;display:none;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:var(--surface);border-radius:14px;padding:28px;width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.confirm-box h4{font-size:16px;font-weight:700;margin-bottom:8px}
+.confirm-box p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.confirm-box .confirm-btns{display:flex;gap:10px;justify-content:center}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state svg{width:48px;height:48px;stroke:var(--border);fill:none;stroke-width:1.5;margin-bottom:12px}
+.empty-state p{font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <h1>好味道</h1>
+    <p>后台管理系统</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">数据概览</div>
+    <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      仪表盘
+    </div>
+    <div class="nav-group-label">内容管理</div>
+    <div class="nav-item" data-page="restaurants" onclick="switchPage('restaurants')">
+      <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><line x1="7" y1="2" x2="7" y2="11"/><path d="M21 15V2v0a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+      餐厅管理
+    </div>
+    <div class="nav-item" data-page="categories" onclick="switchPage('categories')">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      分类标签
+    </div>
+    <div class="nav-group-label">系统</div>
+    <div class="nav-item" data-page="visitors" onclick="switchPage('visitors')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      访客记录
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    好味道 v1.0 · <a href="restaurant-recommender.html">返回小程序</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">仪表盘</div>
+    <div class="topbar-actions">
+      <span style="font-size:13px;color:var(--muted)" id="todayDate"></span>
+      <div class="avatar">管</div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>菜系分布 <span class="badge" id="cuisineCount"></span></h3>
+        <canvas id="chartCuisine" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>评分分布</h3>
+        <canvas id="chartRating" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>价格区间</h3>
+        <canvas id="chartPrice" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>最近添加 <span class="badge">按月</span></h3>
+        <canvas id="chartTimeline" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restaurants -->
+  <div class="page" id="page-restaurants">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <h2>餐厅管理</h2>
+        <input class="search-input" type="text" id="rSearch" placeholder="搜索餐厅名、菜系、商圈…" oninput="renderRestaurantTable()">
+      </div>
+      <button class="btn btn-primary" onclick="openRestaurantModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        添加餐厅
+      </button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortTable('name')">餐厅名称 ↕</th>
+          <th onclick="sortTable('cuisine')">菜系 ↕</th>
+          <th onclick="sortTable('area')">商圈 ↕</th>
+          <th onclick="sortTable('price')">人均 ↕</th>
+          <th onclick="sortTable('rating')">评分 ↕</th>
+          <th>推荐菜</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="rTableBody"></tbody>
+    </table>
+    <div class="pagination" id="rPagination"></div>
+  </div>
+
+  <!-- Categories -->
+  <div class="page" id="page-categories">
+    <div class="cat-page-grid">
+      <div class="cat-section">
+        <h3>菜系分类 <span class="badge" id="cuisineTotal"></span></h3>
+        <div class="cat-add-form">
+          <input type="text" id="newCuisine" placeholder="输入新菜系名称…" onkeydown="if(event.key==='Enter')addCuisine()">
+          <button class="btn btn-primary btn-sm" onclick="addCuisine()">添加</button>
+        </div>
+        <div id="cuisineList"></div>
+      </div>
+      <div class="cat-section">
+        <h3>标签管理 <span class="badge" id="tagTotal"></span></h3>
+        <div class="cat-add-form">
+          <input type="text" id="newTag" placeholder="输入新标签名称…" onkeydown="if(event.key==='Enter')addTag()">
+          <button class="btn btn-primary btn-sm" onclick="addTag()">添加</button>
+        </div>
+        <div id="tagList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visitors -->
+  <div class="page" id="page-visitors">
+    <div class="toolbar">
+      <h2>访客记录</h2>
+      <input class="search-input" type="text" id="vSearch" placeholder="搜索访客…" oninput="renderVisitorTable()" style="width:200px">
+    </div>
+    <table class="visitor-table">
+      <thead>
+        <tr>
+          <th>访客</th>
+          <th>设备</th>
+          <th>浏览页面</th>
+          <th>来源</th>
+          <th>访问时间</th>
+        </tr>
+      </thead>
+      <tbody id="vTableBody"></tbody>
+    </table>
+    <div class="pagination" id="vPagination"></div>
+  </div>
+</div>
+
+<!-- Restaurant Modal -->
+<div class="modal-overlay" id="restaurantModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">添加餐厅</h3>
+      <button onclick="closeRestaurantModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>餐厅名称</label>
+          <input type="text" id="fName" placeholder="如：老北京炸酱面馆">
+        </div>
+        <div class="form-group">
+          <label>菜系</label>
+          <select id="fCuisine"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>商圈</label>
+          <input type="text" id="fArea" placeholder="如：三里屯">
+        </div>
+        <div class="form-group">
+          <label>详细地址</label>
+          <input type="text" id="fAddress" placeholder="如：朝阳区三里屯路19号">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>人均消费（元）</label>
+          <input type="number" id="fPrice" placeholder="如：120">
+        </div>
+        <div class="form-group">
+          <label>评分（1-5）</label>
+          <input type="number" id="fRating" placeholder="如：4.5" step="0.1" min="1" max="5">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>推荐菜（回车添加）</label>
+        <div class="tag-input-wrap" id="dishInputWrap" onclick="document.getElementById('fDishInput').focus()">
+          <input type="text" id="fDishInput" placeholder="输入菜名后按回车…" onkeydown="if(event.key==='Enter'){event.preventDefault();addDishTag()}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>标签（回车添加）</label>
+        <div class="tag-input-wrap" id="tagInputWrap" onclick="document.getElementById('fTagInput').focus()">
+          <input type="text" id="fTagInput" placeholder="输入标签后按回车…" onkeydown="if(event.key==='Enter'){event.preventDefault();addFormTag()}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>个人笔记</label>
+        <textarea id="fNote" placeholder="写下你的用餐感受…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeRestaurantModal()">取消</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveRestaurant()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h4 id="confirmTitle">确认删除</h4>
+    <p id="confirmMsg">确定要删除这家餐厅吗？此操作不可撤销。</p>
+    <div class="confirm-btns">
+      <button class="btn" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirmBtn" onclick="confirmAction()">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {
+  restaurants: [
+    { id:1, name:'蜀味坊', cuisine:'川菜', area:'三里屯', address:'朝阳区三里屯路19号院3层', price:95, rating:4.7, dishes:['水煮鱼','麻婆豆腐','夫妻肺片'], tags:['辣','聚餐'], note:'水煮鱼是招牌，鱼肉嫩滑，麻辣鲜香。工作日中午去不用排队。', date:'2025-03-15' },
+    { id:2, name:'点都德', cuisine:'粤菜', area:'国贸', address:'朝阳区建国门外大街2号B1层', price:128, rating:4.5, dishes:['虾饺','肠粉','叉烧包'], tags:['早茶','精致'], note:'虾饺皮薄馅大，早点去不用等位。周末人多建议预约。', date:'2025-01-22' },
+    { id:3, name:'鮨·心和', cuisine:'日料', area:'亮马桥', address:'朝阳区亮马桥路48号院', price:260, rating:4.8, dishes:['OMAKASE','�的鱼刺身','海胆饭'], tags:['约会','Omakase'], note:'主厨是从东京回来的，海胆甜到哭。适合特殊日子去。', date:'2025-04-02' },
+    { id:4, name:'海底捞火锅', cuisine:'火锅', area:'望京', address:'朝阳区望京西路50号3层', price:135, rating:4.3, dishes:['番茄锅底','捞派滑牛肉','虾滑'], tags:['聚会','服务好'], note:'番茄锅底是我的最爱，虾滑必点。排队久但可以美甲。', date:'2024-12-08' },
+    { id:5, name:'TRB Hutong', cuisine:'西餐', area:'什刹海', address:'东城区沙滩北街23号', price:580, rating:4.9, dishes:['法式鹅肝','和牛','焦糖布丁'], tags:['约会','高端'], note:'藏在胡同里的法餐厅，庭院超美，适合纪念日。需要提前一周预订。', date:'2025-02-14' },
+    { id:6, name:'望京小腰', cuisine:'烧烤', area:'望京', address:'朝阳区望京街道望京西园四区', price:72, rating:4.4, dishes:['烤腰子','烤串','烤鸡翅'], tags:['夜宵','接地气'], note:'晚上九点以后去最有氛围，腰子烤得嫩，啤酒管够。', date:'2024-11-15' },
+    { id:7, name:'湘爱', cuisine:'湘菜', area:'三里屯', address:'朝阳区三里屯北路19号', price:88, rating:4.6, dishes:['剁椒鱼头','小炒黄牛肉','农家小炒肉'], tags:['辣','下饭'], note:'剁椒鱼头用的是千岛湖鱼头，鲜辣过瘾。每道菜都下饭。', date:'2025-03-28' },
+    { id:8, name:'寿司博多', cuisine:'日料', area:'中关村', address:'海淀区中关村大街15号', price:180, rating:4.5, dishes:['寿司拼盘','味噌汤','天妇罗'], tags:['性价比','一人食'], note:'午市套餐性价比超高，寿司米饭的温度和酸度都恰到好处。', date:'2024-10-20' },
+    { id:9, name:'凑凑火锅·茶憩', cuisine:'火锅', area:'合生汇', address:'朝阳区西大望路甲22号合生汇B1', price:118, rating:4.4, dishes:['花胶鸡锅底','大红袍珍珠奶茶','雪花牛肉'], tags:['新式','奶茶'], note:'花胶鸡锅底浓厚，奶茶比很多奶茶店好喝，一举两得。', date:'2025-01-05' },
+    { id:10, name:'老吉堂', cuisine:'本帮菜', area:'国贸', address:'朝阳区建国路89号', price:145, rating:4.6, dishes:['红烧肉','蟹粉豆腐','糖醋小排'], tags:['精致','商务'], note:'红烧肉肥而不腻，入口即化。环境雅致适合商务宴请。', date:'2024-09-18' },
+    { id:11, name:'莆田餐厅', cuisine:'东南亚', area:'侨福芳草地', address:'朝阳区东大桥路9号芳草地L2', price:165, rating:4.7, dishes:['福建炒面','海蛎煎','荔枝肉'], tags:['米其林','精致'], note:'米其林一星，看似朴素的菜但每道都很讲究。海蛎煎必点。', date:'2025-04-10' },
+    { id:12, name:'七寻·烧肉', cuisine:'日料', area:'朝阳大悦城', address:'朝阳区朝阳北路101号朝阳大悦城7层', price:210, rating:4.5, dishes:['和牛三吃','厚切牛舌','生拌牛肉'], tags:['烧肉','约会'], note:'和牛入口即化，配上白饭绝了。双人套餐分量刚好。', date:'2025-02-22' },
+    { id:13, name:'云海肴', cuisine:'东南亚', area:'西单', address:'西城区西单北大街176号', price:78, rating:4.2, dishes:['过桥米线','汽锅鸡','鲜花饼'], tags:['云南','一人食'], note:'过桥米线的汤底鲜美，配菜丰富。冬天吃一碗很治愈。', date:'2024-08-30' },
+    { id:14, name:'比格披萨', cuisine:'西餐', area:'望京', address:'朝阳区望京东路6号', price:68, rating:4.0, dishes:['玛格丽特披萨','凯撒沙拉','提拉米苏'], tags:['平价','朋友聚会'], note:'薄底披萨很正宗，人均不高适合朋友随意聚餐。', date:'2024-07-12' },
+    { id:15, name:'局气', cuisine:'京菜', area:'前门', address:'东城区前门大街45号', price:108, rating:4.5, dishes:['蜂窝煤炒饭','京八件','乾隆白菜'], tags:['老北京','打卡'], note:'装修很有北京味儿，蜂窝煤炒饭造型好看味道也好。带外地朋友来的好选择。', date:'2025-04-20' },
+  ],
+  cuisines: ['川菜','粤菜','日料','火锅','西餐','烧烤','湘菜','本帮菜','东南亚','京菜'],
+  tags: ['辣','聚餐','早茶','精致','约会','Omakase','聚会','服务好','高端','夜宵','接地气','下饭','性价比','一人食','新式','奶茶','商务','米其林','烧肉','云南','平价','朋友聚会','老北京','打卡'],
+  visitors: [
+    { id:1, name:'小明', device:'iOS', pages:12, source:'微信分享', time:'2025-05-07 14:32' },
+    { id:2, name:'小红', device:'Android', pages:8, source:'扫二维码', time:'2025-05-07 13:15' },
+    { id:3, name:'老王', device:'iOS', pages:5, source:'朋友圈', time:'2025-05-07 11:48' },
+    { id:4, name:'阿杰', device:'PC', pages:3, source:'直接访问', time:'2025-05-06 22:10' },
+    { id:5, name:'小林', device:'Android', pages:15, source:'微信分享', time:'2025-05-06 19:30' },
+    { id:6, name:'大伟', device:'iOS', pages:7, source:'扫二维码', time:'2025-05-06 16:05' },
+    { id:7, name:'思思', device:'Android', pages:9, source:'朋友圈', time:'2025-05-05 20:45' },
+    { id:8, name:'老陈', device:'PC', pages:4, source:'直接访问', time:'2025-05-05 14:22' },
+    { id:9, name:'小吴', device:'iOS', pages:11, source:'微信分享', time:'2025-05-05 10:00' },
+    { id:10, name:'阿美', device:'Android', pages:6, source:'朋友圈', time:'2025-05-04 21:30' },
+    { id:11, name:'小胖', device:'iOS', pages:4, source:'扫二维码', time:'2025-05-04 18:15' },
+    { id:12, name:'阿华', device:'PC', pages:2, source:'直接访问', time:'2025-05-03 15:40' },
+    { id:13, name:'小云', device:'iOS', pages:14, source:'微信分享', time:'2025-05-03 12:20' },
+    { id:14, name:'大刘', device:'Android', pages:7, source:'朋友圈', time:'2025-05-02 19:50' },
+    { id:15, name:'老赵', device:'iOS', pages:3, source:'扫二维码', time:'2025-05-02 09:10' },
+  ]
+};
+
+let nextId = 16;
+let sortField = 'name';
+let sortAsc = true;
+let rPage = 1;
+const R_PER_PAGE = 10;
+let editingId = null;
+let modalDishes = [];
+let modalTags = [];
+let pendingConfirmAction = null;
+
+const TITLES = { dashboard:'仪表盘', restaurants:'餐厅管理', categories:'分类标签', visitors:'访客记录' };
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+  document.getElementById('topbarTitle').textContent = TITLES[name];
+  if (name === 'dashboard') drawAllCharts();
+  if (name === 'restaurants') renderRestaurantTable();
+  if (name === 'categories') renderCategories();
+  if (name === 'visitors') renderVisitorTable();
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function showConfirm(title, msg, action) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  pendingConfirmAction = action;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); pendingConfirmAction = null; }
+function confirmAction() { if (pendingConfirmAction) pendingConfirmAction(); closeConfirm(); }
+
+// ── Dashboard ──
+function renderStats() {
+  const rs = DATA.restaurants;
+  const avgPrice = (rs.reduce((s,r) => s + r.price, 0) / rs.length).toFixed(0);
+  const avgRating = (rs.reduce((s,r) => s + r.rating, 0) / rs.length).toFixed(1);
+  const topCuisine = Object.entries(rs.reduce((m,r) => (m[r.cuisine] = (m[r.cuisine]||0)+1, m), {})).sort((a,b) => b[1]-a[1])[0];
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--accent-light);color:var(--accent)">
+        <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><line x1="7" y1="2" x2="7" y2="11"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+      </div>
+      <div class="stat-label">总餐厅数</div>
+      <div class="stat-val">${rs.length}</div>
+      <div class="stat-sub">覆盖 ${DATA.cuisines.length} 个菜系</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--success-light);color:var(--success)">
+        <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="stat-label">平均评分</div>
+      <div class="stat-val">${avgRating}</div>
+      <div class="stat-sub">${topCuisine[0]} 最热门（${topCuisine[1]} 家）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:oklch(94% 0.04 80);color:oklch(55% 0.1 80)">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <div class="stat-label">平均人均</div>
+      <div class="stat-val">¥${avgPrice}</div>
+      <div class="stat-sub">最高 ¥${Math.max(...rs.map(r=>r.price))} · 最低 ¥${Math.min(...rs.map(r=>r.price))}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:oklch(94% 0.02 250);color:oklch(55% 0.12 250)">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="stat-label">总访客</div>
+      <div class="stat-val">${DATA.visitors.length}</div>
+      <div class="stat-sub">今日 ${DATA.visitors.filter(v => v.time.startsWith('2025-05-07')).length} 位</div>
+    </div>`;
+}
+
+function drawAllCharts() {
+  renderStats();
+  drawCuisineChart();
+  drawRatingChart();
+  drawPriceChart();
+  drawTimelineChart();
+}
+
+function drawCuisineChart() {
+  const canvas = document.getElementById('chartCuisine');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr;
+  canvas.style.height = '220px';
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = 220;
+
+  const counts = {};
+  DATA.restaurants.forEach(r => counts[r.cuisine] = (counts[r.cuisine]||0) + 1);
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  document.getElementById('cuisineCount').textContent = entries.length + ' 类';
+
+  const colors = ['#c07040','#d4945a','#a06030','#c08848','#b06838','#d4a868','#907040','#b89060','#c4a070','#a88050'];
+  const maxVal = Math.max(...entries.map(e => e[1]));
+  const barH = 20;
+  const gap = 8;
+  const labelW = 60;
+  const chartW = w - labelW - 40;
+  const startY = 10;
+
+  ctx.clearRect(0,0,w,h);
+  entries.forEach((e, i) => {
+    const y = startY + i * (barH + gap);
+    if (y + barH > h) return;
+    ctx.fillStyle = '#999';
+    ctx.font = '12px -apple-system, PingFang SC, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(e[0], labelW - 8, y + barH/2);
+    const barW = (e[1] / maxVal) * chartW;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.beginPath();
+    ctx.roundRect(labelW, y, barW, barH, 4);
+    ctx.fill();
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'left';
+    ctx.fillText(e[1] + ' 家', labelW + barW + 8, y + barH/2);
+  });
+}
+
+function drawRatingChart() {
+  const canvas = document.getElementById('chartRating');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr;
+  canvas.style.height = '220px';
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = 220;
+
+  const buckets = {'4.0':0, '4.1':0, '4.2':0, '4.3':0, '4.4':0, '4.5':0, '4.6':0, '4.7':0, '4.8':0, '4.9':0};
+  DATA.restaurants.forEach(r => {
+    const key = r.rating.toFixed(1);
+    if (buckets[key] !== undefined) buckets[key]++;
+  });
+  const entries = Object.entries(buckets);
+  const maxVal = Math.max(...entries.map(e => e[1]), 1);
+
+  const chartL = 40, chartR = w - 20, chartT = 10, chartB = h - 30;
+  const chartW = chartR - chartL, chartH = chartB - chartT;
+  const barW = chartW / entries.length - 4;
+
+  ctx.clearRect(0,0,w,h);
+
+  for (let i = 0; i <= 3; i++) {
+    const y = chartB - (i / 3) * chartH;
+    ctx.strokeStyle = '#e8e2da';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(chartL, y); ctx.lineTo(chartR, y); ctx.stroke();
+    ctx.fillStyle = '#aaa';
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText((i).toFixed(0), chartL - 6, y + 3);
+  }
+
+  entries.forEach((e, i) => {
+    const x = chartL + i * (chartW / entries.length) + 2;
+    const barH = (e[1] / maxVal) * chartH;
+    ctx.fillStyle = '#c07040';
+    ctx.beginPath();
+    ctx.roundRect(x, chartB - barH, barW, barH, 3);
+    ctx.fill();
+    ctx.fillStyle = '#999';
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(e[0], x + barW/2, chartB + 14);
+  });
+}
+
+function drawPriceChart() {
+  const canvas = document.getElementById('chartPrice');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr;
+  canvas.style.height = '220px';
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = 220;
+
+  const ranges = [
+    {label:'¥50以下', test: p => p < 50},
+    {label:'¥50-100', test: p => p >= 50 && p < 100},
+    {label:'¥100-200', test: p => p >= 100 && p < 200},
+    {label:'¥200-300', test: p => p >= 200 && p < 300},
+    {label:'¥300+', test: p => p >= 300},
+  ];
+  ranges.forEach(r => r.count = DATA.restaurants.filter(x => r.test(x.price)).length);
+  const maxVal = Math.max(...ranges.map(r => r.count), 1);
+
+  const chartL = 30, chartR = w - 20, chartT = 10, chartB = h - 30;
+  const chartW = chartR - chartL, chartH = chartB - chartT;
+  const barW = chartW / ranges.length - 8;
+
+  ctx.clearRect(0,0,w,h);
+  for (let i = 0; i <= 3; i++) {
+    const y = chartB - (i / 3) * chartH;
+    ctx.strokeStyle = '#e8e2da'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(chartL, y); ctx.lineTo(chartR, y); ctx.stroke();
+  }
+
+  const barColors = ['#d4a868','#c09050','#c07040','#a85830','#904020'];
+  ranges.forEach((r, i) => {
+    const x = chartL + i * (chartW / ranges.length) + 4;
+    const bh = (r.count / maxVal) * chartH;
+    ctx.fillStyle = barColors[i];
+    ctx.beginPath();
+    ctx.roundRect(x, chartB - bh, barW, bh, 4);
+    ctx.fill();
+    ctx.fillStyle = '#999';
+    ctx.font = '11px -apple-system, PingFang SC, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(r.count + ' 家', x + barW/2, chartB - bh - 6);
+    ctx.fillText(r.label, x + barW/2, chartB + 14);
+  });
+}
+
+function drawTimelineChart() {
+  const canvas = document.getElementById('chartTimeline');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr;
+  canvas.style.height = '220px';
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = 220;
+
+  const months = {};
+  DATA.restaurants.forEach(r => {
+    const m = r.date.substring(0, 7);
+    months[m] = (months[m]||0) + 1;
+  });
+  const entries = Object.entries(months).sort((a,b) => a[0].localeCompare(b[0]));
+  const maxVal = Math.max(...entries.map(e => e[1]), 1);
+
+  const chartL = 30, chartR = w - 20, chartT = 20, chartB = h - 30;
+  const chartW = chartR - chartL, chartH = chartB - chartT;
+
+  ctx.clearRect(0,0,w,h);
+  for (let i = 0; i <= 3; i++) {
+    const y = chartB - (i / 3) * chartH;
+    ctx.strokeStyle = '#e8e2da'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(chartL, y); ctx.lineTo(chartR, y); ctx.stroke();
+  }
+
+  if (entries.length < 2) {
+    ctx.fillStyle = '#999'; ctx.font = '13px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('数据量不足以绘制趋势', w/2, h/2);
+    return;
+  }
+
+  const stepX = chartW / (entries.length - 1);
+  const points = entries.map((e, i) => ({
+    x: chartL + i * stepX,
+    y: chartB - (e[1] / maxVal) * chartH,
+    label: e[0].substring(5),
+    val: e[1]
+  }));
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#c07040';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, chartB);
+  points.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(points[points.length-1].x, chartB);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, chartT, 0, chartB);
+  grad.addColorStop(0, 'rgba(192,112,64,0.15)');
+  grad.addColorStop(1, 'rgba(192,112,64,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  points.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#c07040';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.fillStyle = '#999';
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.label, p.x, chartB + 14);
+  });
+}
+
+// ── Restaurants CRUD ──
+function getFilteredRestaurants() {
+  const q = (document.getElementById('rSearch')?.value || '').trim().toLowerCase();
+  let list = [...DATA.restaurants];
+  if (q) list = list.filter(r =>
+    r.name.toLowerCase().includes(q) || r.cuisine.includes(q) || r.area.includes(q) ||
+    r.dishes.some(d => d.includes(q)) || (r.tags && r.tags.some(t => t.includes(q)))
+  );
+  list.sort((a,b) => {
+    let va = a[sortField], vb = b[sortField];
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+  return list;
+}
+
+function renderRestaurantTable() {
+  const list = getFilteredRestaurants();
+  const totalPages = Math.max(1, Math.ceil(list.length / R_PER_PAGE));
+  if (rPage > totalPages) rPage = totalPages;
+  const start = (rPage - 1) * R_PER_PAGE;
+  const page = list.slice(start, start + R_PER_PAGE);
+
+  document.getElementById('rTableBody').innerHTML = page.length ? page.map(r => `
+    <tr>
+      <td><span class="name-cell">${r.name}</span></td>
+      <td><span class="cuisine-tag">${r.cuisine}</span></td>
+      <td>${r.area}</td>
+      <td><span class="price">¥${r.price}</span></td>
+      <td><span class="rating">★ ${r.rating}</span></td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)">${r.dishes.join('、')}</td>
+      <td><div class="actions">
+        <button class="btn btn-sm" onclick="editRestaurant(${r.id})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRestaurant(${r.id})">删除</button>
+      </div></td>
+    </tr>`).join('') : `<tr><td colspan="7" class="empty-state"><p>没有找到匹配的餐厅</p></td></tr>`;
+
+  document.getElementById('rPagination').innerHTML = `
+    <span>共 ${list.length} 家餐厅，第 ${rPage}/${totalPages} 页</span>
+    <div class="pagination-btns">
+      <button onclick="rPage=Math.max(1,rPage-1);renderRestaurantTable()" ${rPage<=1?'disabled':''}>‹</button>
+      ${Array.from({length:totalPages}, (_, i) =>
+        `<button class="${i+1===rPage?'active':''}" onclick="rPage=${i+1};renderRestaurantTable()">${i+1}</button>`
+      ).join('')}
+      <button onclick="rPage=Math.min(${totalPages},rPage+1);renderRestaurantTable()" ${rPage>=totalPages?'disabled':''}>›</button>
+    </div>`;
+}
+
+function sortTable(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = true; }
+  renderRestaurantTable();
+}
+
+function openRestaurantModal(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? '编辑餐厅' : '添加餐厅';
+  document.getElementById('modalSaveBtn').textContent = id ? '保存修改' : '添加';
+  const sel = document.getElementById('fCuisine');
+  sel.innerHTML = DATA.cuisines.map(c => `<option value="${c}">${c}</option>`).join('');
+  modalDishes = [];
+  modalTags = [];
+
+  if (id) {
+    const r = DATA.restaurants.find(x => x.id === id);
+    document.getElementById('fName').value = r.name;
+    document.getElementById('fCuisine').value = r.cuisine;
+    document.getElementById('fArea').value = r.area;
+    document.getElementById('fAddress').value = r.address;
+    document.getElementById('fPrice').value = r.price;
+    document.getElementById('fRating').value = r.rating;
+    document.getElementById('fNote').value = r.note || '';
+    modalDishes = [...r.dishes];
+    modalTags = [...(r.tags||[])];
+  } else {
+    document.getElementById('fName').value = '';
+    document.getElementById('fArea').value = '';
+    document.getElementById('fAddress').value = '';
+    document.getElementById('fPrice').value = '';
+    document.getElementById('fRating').value = '';
+    document.getElementById('fNote').value = '';
+  }
+  renderDishTags();
+  renderFormTags();
+  document.getElementById('restaurantModal').classList.add('show');
+}
+
+function closeRestaurantModal() { document.getElementById('restaurantModal').classList.remove('show'); editingId = null; }
+
+function addDishTag() {
+  const input = document.getElementById('fDishInput');
+  const val = input.value.trim();
+  if (val && !modalDishes.includes(val)) { modalDishes.push(val); renderDishTags(); }
+  input.value = '';
+}
+function removeDishTag(i) { modalDishes.splice(i, 1); renderDishTags(); }
+function renderDishTags() {
+  const wrap = document.getElementById('dishInputWrap');
+  const input = document.getElementById('fDishInput');
+  wrap.querySelectorAll('.tag').forEach(t => t.remove());
+  modalDishes.forEach((d, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `${d} <button onclick="removeDishTag(${i})">×</button>`;
+    wrap.insertBefore(tag, input);
+  });
+}
+
+function addFormTag() {
+  const input = document.getElementById('fTagInput');
+  const val = input.value.trim();
+  if (val && !modalTags.includes(val)) { modalTags.push(val); renderFormTags(); }
+  input.value = '';
+}
+function removeFormTag(i) { modalTags.splice(i, 1); renderFormTags(); }
+function renderFormTags() {
+  const wrap = document.getElementById('tagInputWrap');
+  const input = document.getElementById('fTagInput');
+  wrap.querySelectorAll('.tag').forEach(t => t.remove());
+  modalTags.forEach((d, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `${d} <button onclick="removeFormTag(${i})">×</button>`;
+    wrap.insertBefore(tag, input);
+  });
+}
+
+function saveRestaurant() {
+  const name = document.getElementById('fName').value.trim();
+  const cuisine = document.getElementById('fCuisine').value;
+  const area = document.getElementById('fArea').value.trim();
+  const address = document.getElementById('fAddress').value.trim();
+  const price = parseInt(document.getElementById('fPrice').value);
+  const rating = parseFloat(document.getElementById('fRating').value);
+  const note = document.getElementById('fNote').value.trim();
+
+  if (!name) { showToast('请输入餐厅名称', 'error'); return; }
+  if (!area) { showToast('请输入商圈', 'error'); return; }
+  if (isNaN(price) || price <= 0) { showToast('请输入有效的人均价格', 'error'); return; }
+  if (isNaN(rating) || rating < 1 || rating > 5) { showToast('请输入 1-5 之间的评分', 'error'); return; }
+
+  if (editingId) {
+    const r = DATA.restaurants.find(x => x.id === editingId);
+    Object.assign(r, { name, cuisine, area, address, price, rating, dishes: [...modalDishes], tags: [...modalTags], note });
+    showToast('餐厅信息已更新');
+  } else {
+    DATA.restaurants.push({ id: nextId++, name, cuisine, area, address, price, rating, dishes: [...modalDishes], tags: [...modalTags], note, date: new Date().toISOString().slice(0,10) });
+    showToast('餐厅已添加');
+  }
+  closeRestaurantModal();
+  renderRestaurantTable();
+}
+
+function editRestaurant(id) { openRestaurantModal(id); }
+
+function deleteRestaurant(id) {
+  const r = DATA.restaurants.find(x => x.id === id);
+  showConfirm('删除餐厅', `确定要删除「${r.name}」吗？此操作不可撤销。`, () => {
+    DATA.restaurants = DATA.restaurants.filter(x => x.id !== id);
+    showToast('餐厅已删除');
+    renderRestaurantTable();
+  });
+}
+
+// ── Categories ──
+function renderCategories() {
+  document.getElementById('cuisineTotal').textContent = DATA.cuisines.length + ' 类';
+  document.getElementById('tagTotal').textContent = DATA.tags.length + ' 个';
+
+  const cuisineCounts = {};
+  DATA.restaurants.forEach(r => cuisineCounts[r.cuisine] = (cuisineCounts[r.cuisine]||0)+1);
+
+  document.getElementById('cuisineList').innerHTML = DATA.cuisines.map((c, i) => `
+    <div class="cat-item">
+      <div class="cat-info">
+        <span class="cat-name">${c}</span>
+        <span class="cat-count">${cuisineCounts[c] || 0} 家餐厅</span>
+      </div>
+      <div class="cat-actions">
+        <button class="btn btn-sm btn-danger" onclick="deleteCuisine(${i})">删除</button>
+      </div>
+    </div>`).join('');
+
+  const tagCounts = {};
+  DATA.restaurants.forEach(r => (r.tags||[]).forEach(t => tagCounts[t] = (tagCounts[t]||0)+1));
+
+  document.getElementById('tagList').innerHTML = DATA.tags.map((t, i) => `
+    <div class="cat-item">
+      <div class="cat-info">
+        <span class="cat-name">${t}</span>
+        <span class="cat-count">${tagCounts[t] || 0} 家</span>
+      </div>
+      <div class="cat-actions">
+        <button class="btn btn-sm btn-danger" onclick="deleteTag(${i})">删除</button>
+      </div>
+    </div>`).join('');
+}
+
+function addCuisine() {
+  const input = document.getElementById('newCuisine');
+  const val = input.value.trim();
+  if (!val) return;
+  if (DATA.cuisines.includes(val)) { showToast('该菜系已存在', 'error'); return; }
+  DATA.cuisines.push(val);
+  input.value = '';
+  renderCategories();
+  showToast('菜系已添加');
+}
+
+function deleteCuisine(i) {
+  const name = DATA.cuisines[i];
+  const count = DATA.restaurants.filter(r => r.cuisine === name).length;
+  if (count > 0) { showToast(`「${name}」下还有 ${count} 家餐厅，无法删除`, 'error'); return; }
+  DATA.cuisines.splice(i, 1);
+  renderCategories();
+  showToast('菜系已删除');
+}
+
+function addTag() {
+  const input = document.getElementById('newTag');
+  const val = input.value.trim();
+  if (!val) return;
+  if (DATA.tags.includes(val)) { showToast('该标签已存在', 'error'); return; }
+  DATA.tags.push(val);
+  input.value = '';
+  renderCategories();
+  showToast('标签已添加');
+}
+
+function deleteTag(i) {
+  const name = DATA.tags[i];
+  const count = DATA.restaurants.filter(r => (r.tags||[]).includes(name)).length;
+  if (count > 0) { showToast(`「${name}」被 ${count} 家餐厅使用，无法删除`, 'error'); return; }
+  DATA.tags.splice(i, 1);
+  renderCategories();
+  showToast('标签已删除');
+}
+
+// ── Visitors ──
+let vPage = 1;
+const V_PER_PAGE = 8;
+
+function renderVisitorTable() {
+  const q = (document.getElementById('vSearch')?.value || '').trim().toLowerCase();
+  let list = [...DATA.visitors];
+  if (q) list = list.filter(v => v.name.includes(q) || v.device.toLowerCase().includes(q) || v.source.includes(q));
+  list.sort((a,b) => b.time.localeCompare(a.time));
+
+  const totalPages = Math.max(1, Math.ceil(list.length / V_PER_PAGE));
+  if (vPage > totalPages) vPage = totalPages;
+  const start = (vPage - 1) * V_PER_PAGE;
+  const page = list.slice(start, start + V_PER_PAGE);
+
+  document.getElementById('vTableBody').innerHTML = page.map(v => `
+    <tr>
+      <td style="font-weight:600">${v.name}</td>
+      <td><span class="device-pill ${v.device === 'iOS' ? 'ios' : v.device === 'Android' ? 'android' : 'device-pc'}">${v.device}</span></td>
+      <td><span class="page-views">${v.pages} 页</span></td>
+      <td>${v.source}</td>
+      <td style="color:var(--muted)">${v.time}</td>
+    </tr>`).join('');
+
+  document.getElementById('vPagination').innerHTML = `
+    <span>共 ${list.length} 条记录</span>
+    <div class="pagination-btns">
+      <button onclick="vPage=Math.max(1,vPage-1);renderVisitorTable()" ${vPage<=1?'disabled':''}>‹</button>
+      ${Array.from({length:totalPages}, (_, i) =>
+        `<button class="${i+1===vPage?'active':''}" onclick="vPage=${i+1};renderVisitorTable()">${i+1}</button>`
+      ).join('')}
+      <button onclick="vPage=Math.min(${totalPages},vPage+1);renderVisitorTable()" ${vPage>=totalPages?'disabled':''}>›</button>
+    </div>`;
+}
+
+// ── Init ──
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+drawAllCharts();
+renderRestaurantTable();
+renderCategories();
+renderVisitorTable();
+</script>
+</body>
+</html>

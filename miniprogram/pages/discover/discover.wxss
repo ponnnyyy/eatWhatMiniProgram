@@ -1,0 +1,125 @@
+.discover-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 80rpx;
+  padding: 80rpx 32rpx 140rpx;
+  box-sizing: border-box;
+}
+
+.prompt-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.prompt-icon {
+  font-family: Georgia, 'Noto Serif SC', 'STSong', serif;
+  font-size: 160rpx;
+  color: var(--border);
+  line-height: 1;
+  animation: float 3s ease-in-out infinite;
+}
+
+.prompt-text {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.prompt-sub {
+  font-size: 28rpx;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.discover-btn {
+  width: 280rpx;
+  height: 280rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D49058, #B05828);
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.discover-btn:active {
+  transform: scale(0.93);
+}
+
+.discover-btn.loading {
+  animation: spin 0.6s ease-out;
+}
+
+.btn-text {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+/* Result Card */
+.result-card {
+  width: 100%;
+  max-width: 680rpx;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border);
+  overflow: hidden;
+  animation: fadeInUp 0.4s ease-out;
+  box-sizing: border-box;
+}
+
+.result-accent-line {
+  height: 8rpx;
+  background: linear-gradient(135deg, #D49058, #B05828);
+}
+
+.result-badge {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 22rpx;
+  font-weight: 500;
+  padding: 6rpx 24rpx;
+  border-radius: var(--radius-xs);
+  margin-bottom: 20rpx;
+  display: inline-block;
+}
+
+.result-inner {
+  padding: 32rpx;
+}
+
+.result-name {
+  font-family: Georgia, 'Noto Serif SC', 'STSong', serif;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8rpx;
+  letter-spacing: -0.01em;
+}
+
+.result-meta {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-bottom: 24rpx;
+}
+
+.result-reason {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 20rpx 0;
+  border-top: 1rpx solid var(--border);
+  line-height: 1.7;
+}
+
+.result-details {
+  font-size: 26rpx;
+  color: var(--text-tertiary);
+  line-height: 1.8;
+}

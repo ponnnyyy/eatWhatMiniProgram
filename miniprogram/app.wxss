@@ -1,0 +1,172 @@
+/* ===== Warm Editorial Theme (matching index.html oklch palette) ===== */
+page {
+  --bg-page: #F5EEE5;
+  --bg-surface: #FCFAF6;
+  --bg-muted: #EDE7DF;
+
+  --accent: #CC8048;
+  --accent-light: #EDE3D8;
+  --accent-hover: #B06830;
+  --accent-subtle: rgba(204, 128, 72, 0.06);
+
+  --text-primary: #2B2420;
+  --text-secondary: #7D746B;
+  --text-tertiary: #A09890;
+  --text-inverse: #FFFFFF;
+
+  --border: #DFD9D1;
+  --border-light: #EAE4DC;
+
+  --green: #3A8C5A;
+  --green-light: #DEF0E4;
+  --gold: #C08848;
+  --gold-light: #FBF3E8;
+  --danger: #C43425;
+  --danger-light: #F5E0DA;
+
+  --radius-xs: 12rpx;
+  --radius-sm: 16rpx;
+  --radius-md: 28rpx;
+  --radius-lg: 32rpx;
+  --radius-xl: 44rpx;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 28rpx;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Common Classes ===== */
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: var(--radius-xs);
+  font-weight: 500;
+}
+
+.badge-accent {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.badge-gold {
+  background: var(--gold-light);
+  color: var(--gold);
+}
+
+.badge-green {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 100rpx;
+  font-weight: 500;
+  font-size: 28rpx;
+  padding: 20rpx 40rpx;
+  text-align: center;
+  transition: transform 0.15s;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1rpx solid var(--border);
+  border-radius: 100rpx;
+  font-weight: 500;
+  font-size: 28rpx;
+  padding: 20rpx 40rpx;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.btn-outline:active {
+  background: var(--bg-surface);
+  transform: scale(0.97);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 32rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.section-title .count {
+  font-size: 26rpx;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+/* Global Input Styles */
+input {
+  line-height: 1.6;
+}
+
+textarea {
+  min-height: 120rpx;
+  line-height: 1.6;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20rpx); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(720deg); }
+}
+
+/* Page fade-in on tab switch */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(12rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageFadeIn 0.25s ease-out;
+}

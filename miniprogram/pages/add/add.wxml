@@ -1,0 +1,155 @@
+<view class="add-page page-enter">
+  <!-- Page Header -->
+  <view class="page-header">
+    <text class="page-title">添加新餐厅</text>
+    <text class="page-subtitle">记录你发现的好味道</text>
+  </view>
+
+  <!-- Form Section -->
+  <view class="form-section">
+    <!-- 店名 -->
+    <view class="form-item">
+      <text class="form-label">店名 *</text>
+      <input
+        class="form-input"
+        placeholder="请输入餐厅名称"
+        value="{{form.name}}"
+        data-field="name"
+        bindinput="onInputChange"
+      />
+    </view>
+
+    <!-- 地市 -->
+    <view class="form-item">
+      <text class="form-label">地市</text>
+      <input
+        class="form-input"
+        placeholder="请输入城市"
+        value="{{form.city}}"
+        data-field="city"
+        bindinput="onInputChange"
+      />
+    </view>
+
+    <!-- 地址 + 选择位置 -->
+    <view class="form-item location-section">
+      <text class="form-label">地址</text>
+      <view class="location-input-row">
+        <input
+          class="form-input location-input"
+          placeholder="请输入详细地址"
+          value="{{form.address}}"
+          data-field="address"
+          bindinput="onInputChange"
+        />
+        <button class="location-btn" bindtap="chooseLocation">
+          <text class="location-icon">📍</text>
+          <text>选择位置</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- 坐标显示 -->
+    <view wx:if="{{form.latitude}}" class="coord-display">
+      <text class="coord-badge">纬度: {{form.latitude}}</text>
+      <text class="coord-badge">经度: {{form.longitude}}</text>
+    </view>
+
+    <!-- 地图预览 -->
+    <map
+      wx:if="{{form.latitude}}"
+      class="map-preview"
+      latitude="{{form.latitude}}"
+      longitude="{{form.longitude}}"
+      markers="{{markers}}"
+      scale="16"
+      show-location
+      enable-zoom
+      enable-scroll
+    />
+
+    <!-- 人均消费 -->
+    <view class="form-item">
+      <text class="form-label">人均消费</text>
+      <input
+        class="form-input"
+        type="digit"
+        placeholder="请输入人均消费金额"
+        value="{{form.avgPrice}}"
+        data-field="avgPrice"
+        bindinput="onInputChange"
+      />
+    </view>
+
+    <!-- 简介 -->
+    <view class="form-item">
+      <text class="form-label">简介</text>
+      <input
+        class="form-input"
+        placeholder="一句话介绍这家餐厅"
+        value="{{form.description}}"
+        data-field="description"
+        bindinput="onInputChange"
+      />
+    </view>
+
+    <!-- 推荐菜 -->
+    <view class="form-item">
+      <text class="form-label">推荐菜</text>
+      <textarea
+        class="form-textarea"
+        placeholder="推荐的菜品，用逗号或换行分隔"
+        value="{{form.recommendedDishes}}"
+        data-field="recommendedDishes"
+        bindinput="onTextareaInput"
+        auto-height
+        maxlength="500"
+      />
+    </view>
+
+    <!-- 标签选择 -->
+    <view class="form-item tag-section">
+      <text class="form-label">标签</text>
+      <view class="tag-list-wrap">
+        <view
+          wx:for="{{allTags}}"
+          wx:key="id"
+          class="tag-item {{selectedTagMap[item.id] ? 'selected' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="toggleTag"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 图片上传 -->
+    <view class="form-item image-upload-section">
+      <text class="form-label">餐厅图片（最多3张）</text>
+      <view class="image-grid">
+        <view wx:for="{{imagePreviews}}" wx:key="*this" class="image-grid-item">
+          <image src="{{item}}" mode="aspectFill" />
+          <view class="image-grid-remove" bindtap="removeImage" data-index="{{index}}">
+            <text>×</text>
+          </view>
+        </view>
+        <view wx:if="{{imagePreviews.length < 3}}" class="image-grid-item image-grid-add" bindtap="chooseImage">
+          <text class="upload-icon">+</text>
+          <text class="upload-text">添加图片</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Action Buttons -->
+    <view class="form-actions">
+      <button
+        class="submit-btn"
+        bindtap="handleSubmit"
+        disabled="{{submitting}}"
+      >
+        {{submitting ? '提交中...' : '添加餐厅'}}
+      </button>
+      <button class="reset-btn" bindtap="resetForm">重置</button>
+    </view>
+  </view>
+</view>
