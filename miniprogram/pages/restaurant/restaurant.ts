@@ -1,4 +1,4 @@
-import { getRestaurants, getTags, updateRestaurant, deleteRestaurant, setRestaurantTags, checkIn, uploadImage, createTag, deleteTag, getRestaurantById, getVisits } from '../../utils/api'
+import { getRestaurants, getTags, updateRestaurant, deleteRestaurant, setRestaurantTags, checkIn, uploadImage, createTag, deleteTag, getVisits, chatRecommend, generateReview } from '../../utils/api'
 import { getImageUrl, parseImageUrls } from '../../utils/util'
 
 interface Restaurant {
@@ -185,7 +185,14 @@ Page({
 
     detailVisible: false,
     detailData: {} as any,
-    detailVisits: [] as any[]
+    detailVisits: [] as any[],
+
+    aiRecInput: '',
+    aiRecLoading: false,
+    aiRecMessages: [] as Array<{ role: string; content: string; recommendations?: any[] }>,
+    aiOverlayVisible: false,
+    aiReviewLoading: false,
+    aiKbHeight: 0
   },
 
   onLoad() {
@@ -370,7 +377,11 @@ Page({
 
   onEditInput(e: any) {
     const field = e.currentTarget.dataset.field
-    this.setData({ [`editForm.${field}`]: e.detail.value })
+    let value = e.detail.value
+    if (field === 'avgPrice') {
+      value = value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')
+    }
+    this.setData({ [`editForm.${field}`]: value })
   },
 
   onEditTagToggle(e: any) {
@@ -719,6 +730,92 @@ Page({
         }
       }
     })
+  },
+
+  // AI 智能推荐
+  openAiOverlay() {
+    this.setData({ aiOverlayVisible: true })
+  },
+
+  closeAiOverlay() {
+    this.setData({ aiOverlayVisible: false, aiKbHeight: 0 })
+  },
+
+  onAiKbShow(e: any) {
+    this.setData({ aiKbHeight: e.detail.height || 0 })
+  },
+
+  onAiKbHide() {
+    this.setData({ aiKbHeight: 0 })
+  },
+
+  onAiRecInput(e: any) {
+    this.setData({ aiRecInput: e.detail.value })
+  },
+
+  async handleAiRecSend() {
+    const query = this.data.aiRecInput.trim()
+    if (!query || this.data.aiRecLoading) return
+
+    const userMsg = { role: 'user' as const, content: query }
+    this.setData({
+      aiRecMessages: [...this.data.aiRecMessages, userMsg],
+      aiRecInput: '',
+      aiRecLoading: true
+    })
+
+    try {
+      const history = this.data.aiRecMessages.slice(0, -1).map(m => ({
+        role: m.role, content: m.content
+      }))
+      const res: any = await chatRecommend(query, history)
+      if (res.data && res.data.code === 200) {
+        const recs = res.data.data.recommendations || []
+        let aiContent: string
+        let aiRecs: any[] | undefined
+
+        if (recs.length > 0) {
+          aiContent = recs.map((r: any) => r.name).join('、')
+          aiRecs = recs
+        } else {
+          aiContent = '没找到特别匹配的店，换个说法试试？'
+        }
+
+        const aiMsg = { role: 'assistant' as const, content: aiContent, recommendations: aiRecs }
+        this.setData({ aiRecMessages: [...this.data.aiRecMessages, aiMsg] })
+      }
+    } catch (e) {
+      const aiMsg = { role: 'assistant' as const, content: '网络请求失败，请稍后重试' }
+      this.setData({ aiRecMessages: [...this.data.aiRecMessages, aiMsg] })
+    } finally {
+      this.setData({ aiRecLoading: false })
+    }
+  },
+
+  // AI 生成点评
+  async generateAiReview() {
+    if (this.data.aiReviewLoading) return
+    const { checkInForm, checkInRestaurantId } = this.data
+    if (!checkInForm.rating) {
+      wx.showToast({ title: '请先选评分', icon: 'none' })
+      return
+    }
+
+    this.setData({ aiReviewLoading: true })
+    try {
+      const res: any = await generateReview({
+        restaurantId: checkInRestaurantId,
+        rating: checkInForm.rating,
+        cost: checkInForm.cost || undefined
+      })
+      if (res.data && res.data.code === 200) {
+        this.setData({ 'checkInForm.comment': res.data.data.review })
+      }
+    } catch (e) {
+      wx.showToast({ title: '生成失败', icon: 'none' })
+    } finally {
+      this.setData({ aiReviewLoading: false })
+    }
   },
 
   stopPropagation() {

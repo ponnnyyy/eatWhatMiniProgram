@@ -1,29 +1,4 @@
 <view class="profile-page page-enter">
-  <!-- User Card -->
-  <view class="user-card">
-    <view class="user-avatar-wrap">
-      <image class="user-avatar" src="{{userInfo.avatarUrl}}" wx:if="{{userInfo.avatarUrl}}" mode="aspectFill" />
-      <view class="user-avatar-placeholder" wx:else>
-        <text class="avatar-text">{{userInfo.nickname[0] || '我'}}</text>
-      </view>
-    </view>
-    <view class="user-info">
-      <text class="user-name">{{userInfo.nickname || '微信用户'}}</text>
-      <text class="user-id">ID: {{userInfo.openid ? userInfo.openid.substring(0, 16) + '...' : '获取中...'}}</text>
-    </view>
-    <view class="stats-brief">
-      <view class="stat-item">
-        <text class="stat-num">{{myCount}}</text>
-        <text class="stat-label">我的</text>
-      </view>
-      <view class="stat-divider"></view>
-      <view class="stat-item">
-        <text class="stat-num">{{totalCount}}</text>
-        <text class="stat-label">全部</text>
-      </view>
-    </view>
-  </view>
-
   <!-- My Restaurants -->
   <view class="section">
     <text class="section-title">我创建的餐厅</text>

@@ -1,11 +1,9 @@
 {
   "pages": [
     "pages/restaurant/restaurant",
-    "pages/chat/chat",
-    "pages/discover/discover",
     "pages/add/add",
-    "pages/profile/profile",
-    "pages/stats/stats"
+    "pages/stats/stats",
+    "pages/profile/profile"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -25,16 +23,12 @@
         "text": "餐厅"
       },
       {
-        "pagePath": "pages/chat/chat",
-        "text": "对话"
-      },
-      {
-        "pagePath": "pages/discover/discover",
-        "text": "惊喜"
-      },
-      {
         "pagePath": "pages/add/add",
         "text": "添加"
+      },
+      {
+        "pagePath": "pages/stats/stats",
+        "text": "统计"
       },
       {
         "pagePath": "pages/profile/profile",

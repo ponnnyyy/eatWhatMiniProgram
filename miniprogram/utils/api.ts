@@ -123,6 +123,14 @@ export function getUserInfo() {
   return request({ url: '/api/auth/user', method: 'GET' })
 }
 
+export function updateProfile(data: { nickname?: string; avatarUrl?: string }) {
+  return request({ url: '/api/auth/profile', method: 'PUT', data })
+}
+
+export function generateReview(data: { restaurantId: number; rating?: number; cost?: string }) {
+  return request({ url: '/api/recommend/review', method: 'POST', data })
+}
+
 // ===== 访客记录 =====
 
 export function recordVisit(data: { openid: string; nickname: string; avatarUrl: string; page: string; source: string; device: string }) {

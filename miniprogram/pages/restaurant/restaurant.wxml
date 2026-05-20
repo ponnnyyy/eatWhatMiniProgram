@@ -31,6 +31,12 @@
   <!-- Restaurant List -->
   <scroll-view scroll-y class="restaurant-scroll" bindscrolltolower="onScrollToLower" lower-threshold="200">
     <view class="restaurant-list">
+      <!-- AI 智能推荐入口卡片 -->
+      <view class="ai-hero-card" bindtap="openAiOverlay">
+        <text class="ai-hero-label">✦ AI 智能推荐</text>
+        <text class="ai-hero-cta">不知道吃什么？</text>
+        <text class="ai-hero-sub">描述你的口味，AI 帮你挑选</text>
+      </view>
       <block wx:for="{{paginatedRestaurants}}" wx:key="id">
         <view class="restaurant-card">
           <!-- Card Images -->
@@ -125,6 +131,8 @@
       </view>
     </view>
   </scroll-view>
+
+  <!-- Floating AI Button (removed, now inline) -->
 
   <!-- Edit Popup -->
   <view wx:if="{{editVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeEdit">
@@ -221,6 +229,9 @@
         <view class="form-group">
           <text class="form-label">评论</text>
           <textarea class="form-textarea" value="{{checkInForm.comment}}" data-field="comment" bindinput="onCheckInInput" placeholder="分享你的体验" />
+          <view class="ai-review-btn" bindtap="generateAiReview">
+            <text>{{aiReviewLoading ? '生成中...' : 'AI 生成点评'}}</text>
+          </view>
         </view>
         <view class="form-actions">
           <view class="btn btn-cancel" bindtap="closeCheckIn"><text>取消</text></view>
@@ -386,6 +397,63 @@
             <view wx:if="{{item.comment}}" class="visit-comment">{{item.comment}}</view>
           </view>
         </block>
+      </view>
+    </view>
+  </view>
+
+</view>
+
+<!-- AI 对话弹窗 -->
+<view class="ai-dialog {{aiOverlayVisible ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="ai-dialog-mask" bindtap="closeAiOverlay"></view>
+  <view class="ai-dialog-sheet" catchtap="stopPropagation" style="bottom:{{aiKbHeight}}px">
+    <view class="ai-dialog-head">
+      <text class="ai-dialog-title">AI 智能推荐</text>
+      <view class="ai-dialog-close" bindtap="closeAiOverlay"><text>✕</text></view>
+    </view>
+    <scroll-view scroll-y class="ai-dialog-scroll">
+      <view class="ai-dialog-welcome" wx:if="{{aiRecMessages.length === 0 && !aiRecLoading}}">
+        <text class="ai-wel-icon">✦</text>
+        <text class="ai-wel-title">告诉我你想吃什么</text>
+        <text class="ai-wel-hint">比如："想吃辣的，人均50左右"</text>
+      </view>
+      <view class="ai-dialog-msgs" wx:if="{{aiRecMessages.length > 0}}">
+        <block wx:for="{{aiRecMessages}}" wx:key="index">
+          <view class="ai-row {{item.role === 'user' ? 'ai-row-r' : 'ai-row-l'}}">
+            <text wx:if="{{item.role === 'user'}}" class="ai-bubble ai-bubble-u">{{item.content}}</text>
+            <view wx:else class="ai-bubble-wrap">
+              <block wx:if="{{item.recommendations && item.recommendations.length > 0}}">
+                <view class="ai-card" wx:for="{{item.recommendations}}" wx:for-item="rec" wx:key="id">
+                  <view class="ai-card-bar"></view>
+                  <view class="ai-card-body">
+                    <view class="ai-card-top">
+                      <text class="ai-card-name">{{rec.name}}</text>
+                      <text class="ai-card-price" wx:if="{{rec.avgPrice}}">人均 {{rec.avgPrice}}</text>
+                    </view>
+                    <view class="ai-card-meta">
+                      <text class="ai-card-city" wx:if="{{rec.city}}">{{rec.city}}</text>
+                      <text wx:if="{{rec.address}}">{{rec.address}}</text>
+                    </view>
+                    <text class="ai-card-desc" wx:if="{{rec.description}}">{{rec.description}}</text>
+                    <view class="ai-card-why" wx:if="{{rec.reason}}"><text>{{rec.reason}}</text></view>
+                  </view>
+                </view>
+              </block>
+              <text wx:else class="ai-bubble ai-bubble-a">{{item.content}}</text>
+            </view>
+          </view>
+        </block>
+      </view>
+      <view class="ai-loading" wx:if="{{aiRecLoading}}">
+        <text class="ai-ldot"></text>
+        <text class="ai-ldot"></text>
+        <text class="ai-ldot"></text>
+      </view>
+    </scroll-view>
+    <view class="ai-dialog-bar">
+      <input class="ai-dialog-input" placeholder="描述你想吃什么..." value="{{aiRecInput}}" bindinput="onAiRecInput" bindconfirm="handleAiRecSend" confirm-type="send" adjust-position="{{false}}" bindfocus="onAiKbShow" bindblur="onAiKbHide" />
+      <view class="ai-dialog-send {{aiRecInput && !aiRecLoading ? 'on' : ''}}" bindtap="handleAiRecSend">
+        <text>{{aiRecLoading ? '...' : '发送'}}</text>
       </view>
     </view>
   </view>

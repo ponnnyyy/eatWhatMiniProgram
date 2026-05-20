@@ -4,19 +4,15 @@ const app = getApp<IAppOption>()
 
 Page({
   data: {
-    userInfo: null as any,
     myRestaurants: [] as any[],
-    myCount: 0,
-    totalCount: 0,
     loading: true
   },
 
   async onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ selected: 4 })
+      this.getTabBar().setData({ selected: 3 })
     }
 
-    // 等待静默登录完成
     if (app.globalData.loginPromise) {
       await app.globalData.loginPromise
     }
@@ -26,7 +22,7 @@ Page({
 
   async loadData() {
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
-    this.setData({ userInfo, loading: true })
+    this.setData({ loading: true })
 
     if (!userInfo || !userInfo.openid) {
       this.setData({ loading: false })
@@ -37,11 +33,8 @@ Page({
       const res: any = await getRestaurants()
       if (res.data && res.data.code === 200) {
         const all: any[] = res.data.data || []
-        const myRestaurants = all.filter(r => r.createdBy === userInfo.openid)
         this.setData({
-          myRestaurants,
-          myCount: myRestaurants.length,
-          totalCount: all.length,
+          myRestaurants: all.filter(r => r.createdBy === userInfo.openid),
           loading: false
         })
       }
