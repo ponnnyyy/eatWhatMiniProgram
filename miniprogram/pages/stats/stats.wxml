@@ -1,4 +1,4 @@
-<view class="stats-page page-enter">
+<view class="stats-page">
   <!-- Loading state -->
   <view class="loading-state" wx:if="{{loading}}">
     <view class="loading-spinner"></view>

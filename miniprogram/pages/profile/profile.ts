@@ -8,16 +8,17 @@ Page({
     loading: true
   },
 
+  async onLoad() {
+    if (app.globalData.loginPromise) {
+      await app.globalData.loginPromise
+    }
+    this.loadData()
+  },
+
   async onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 3 })
     }
-
-    if (app.globalData.loginPromise) {
-      await app.globalData.loginPromise
-    }
-
-    this.loadData()
   },
 
   async loadData() {

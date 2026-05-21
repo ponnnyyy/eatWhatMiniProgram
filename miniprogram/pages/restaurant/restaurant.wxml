@@ -1,4 +1,4 @@
-<view class="page-container page-enter">
+<view class="page-container">
   <!-- Filter Bar -->
   <view class="filter-bar">
     <picker mode="selector" range="{{cityRange}}" bindchange="onCityChange">
@@ -136,12 +136,12 @@
 
   <!-- Edit Popup -->
   <view wx:if="{{editVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeEdit">
-    <view class="popup-content" catchtap="stopPropagation">
+    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
       <view class="popup-header">
         <text class="popup-title">编辑餐厅</text>
         <text class="popup-close" bindtap="closeEdit">×</text>
       </view>
-      <view class="popup-body">
+      <scroll-view scroll-y class="popup-body">
         <view class="form-group">
           <text class="form-label">餐厅名称 *</text>
           <input class="form-input" value="{{editForm.name}}" data-field="name" bindinput="onEditInput" placeholder="请输入餐厅名称" />
@@ -190,22 +190,22 @@
             </view>
           </view>
         </view>
-        <view class="form-actions">
-          <view class="btn btn-cancel" bindtap="closeEdit"><text>取消</text></view>
-          <view class="btn btn-primary" bindtap="handleEditSubmit"><text>保存</text></view>
-        </view>
+      </scroll-view>
+      <view class="form-actions">
+        <view class="btn btn-cancel" bindtap="closeEdit"><text>取消</text></view>
+        <view class="btn btn-primary" bindtap="handleEditSubmit"><text>保存</text></view>
       </view>
     </view>
   </view>
 
   <!-- Check-in Popup -->
   <view wx:if="{{checkInVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeCheckIn">
-    <view class="popup-content" catchtap="stopPropagation">
+    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
       <view class="popup-header">
         <text class="popup-title">打卡</text>
         <text class="popup-close" bindtap="closeCheckIn">×</text>
       </view>
-      <view class="popup-body">
+      <scroll-view scroll-y class="popup-body">
         <view class="form-group">
           <text class="form-label">评分</text>
           <view class="star-rating">
@@ -229,14 +229,11 @@
         <view class="form-group">
           <text class="form-label">评论</text>
           <textarea class="form-textarea" value="{{checkInForm.comment}}" data-field="comment" bindinput="onCheckInInput" placeholder="分享你的体验" />
-          <view class="ai-review-btn" bindtap="generateAiReview">
-            <text>{{aiReviewLoading ? '生成中...' : 'AI 生成点评'}}</text>
-          </view>
         </view>
-        <view class="form-actions">
-          <view class="btn btn-cancel" bindtap="closeCheckIn"><text>取消</text></view>
-          <view class="btn btn-primary" bindtap="handleCheckIn"><text>打卡</text></view>
-        </view>
+      </scroll-view>
+      <view class="form-actions">
+        <view class="btn btn-cancel" bindtap="closeCheckIn"><text>取消</text></view>
+        <view class="btn btn-primary" bindtap="handleCheckIn"><text>打卡</text></view>
       </view>
     </view>
   </view>
@@ -264,12 +261,12 @@
 
   <!-- Tag Management Popup -->
   <view wx:if="{{tagManageVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeTagManage">
-    <view class="popup-content" catchtap="stopPropagation">
+    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
       <view class="popup-header">
         <text class="popup-title">管理标签</text>
         <text class="popup-close" bindtap="closeTagManage">×</text>
       </view>
-      <view class="popup-body">
+      <scroll-view scroll-y class="popup-body">
         <view class="tag-add-row">
           <input class="form-input tag-name-input" value="{{newTagName}}" bindinput="onNewTagNameInput" placeholder="新标签名称" />
           <view class="color-preview" style="background: {{newTagColor}}" bindtap="toggleColorPicker"></view>
@@ -319,7 +316,7 @@
             </view>
           </block>
         </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
 

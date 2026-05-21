@@ -1,4 +1,4 @@
-<view class="add-page page-enter">
+<view class="add-page">
   <!-- Page Header -->
   <view class="page-header">
     <text class="page-title">添加新餐厅</text>
