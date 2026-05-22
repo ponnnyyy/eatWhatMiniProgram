@@ -132,272 +132,277 @@
     </view>
   </scroll-view>
 
-  <!-- Floating AI Button (removed, now inline) -->
+</view>
 
-  <!-- Edit Popup -->
-  <view wx:if="{{editVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeEdit">
-    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
-      <view class="popup-header">
-        <text class="popup-title">编辑餐厅</text>
-        <text class="popup-close" bindtap="closeEdit">×</text>
-      </view>
-      <scroll-view scroll-y class="popup-body">
-        <view class="form-group">
-          <text class="form-label">餐厅名称 *</text>
-          <input class="form-input" value="{{editForm.name}}" data-field="name" bindinput="onEditInput" placeholder="请输入餐厅名称" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">城市 *</text>
-          <input class="form-input" value="{{editForm.city}}" data-field="city" bindinput="onEditInput" placeholder="请输入城市" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">地址</text>
-          <input class="form-input" value="{{editForm.address}}" data-field="address" bindinput="onEditInput" placeholder="请输入地址" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">人均价格</text>
-          <input class="form-input" type="digit" value="{{editForm.avgPrice}}" data-field="avgPrice" bindinput="onEditInput" placeholder="请输入人均价格" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">描述</text>
-          <textarea class="form-textarea" value="{{editForm.description}}" data-field="description" bindinput="onEditInput" placeholder="请输入描述" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">推荐菜品</text>
-          <textarea class="form-textarea" value="{{editForm.recommendedDishes}}" data-field="recommendedDishes" bindinput="onEditInput" placeholder="请输入推荐菜品" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">标签</text>
-          <view class="tag-checkboxes">
-            <block wx:for="{{allTags}}" wx:key="id">
-              <view class="tag-checkbox {{editTagMap[item.id] ? 'checked' : ''}}" bindtap="onEditTagToggle" data-id="{{item.id}}">
-                <text class="checkbox-dot" style="background: {{editTagMap[item.id] ? (item.color || '#CC8048') : '#E0DAD2'}}"></text>
-                <text>{{item.name}}</text>
-              </view>
-            </block>
-          </view>
-        </view>
-        <view class="form-group">
-          <text class="form-label">图片（最多3张）</text>
-          <view class="image-grid">
-            <view wx:for="{{editImageItems}}" wx:key="id" class="image-grid-item">
-              <image src="{{item.displayUrl}}" mode="aspectFill" />
-              <view class="image-grid-remove" bindtap="removeEditImage" data-id="{{item.id}}">×</view>
-            </view>
-            <view wx:if="{{editImageItems.length < 3}}" class="image-grid-item image-grid-add" bindtap="chooseEditImage">
-              <text class="upload-icon">+</text>
-              <text class="upload-text">添加</text>
-            </view>
-          </view>
-        </view>
-      </scroll-view>
-      <view class="form-actions">
-        <view class="btn btn-cancel" bindtap="closeEdit"><text>取消</text></view>
-        <view class="btn btn-primary" bindtap="handleEditSubmit"><text>保存</text></view>
-      </view>
+<!-- Edit Popup -->
+<view wx:if="{{editVisible}}" class="form-fullscreen">
+  <view class="form-fs-head">
+    <text class="form-fs-title">编辑餐厅</text>
+    <view class="form-fs-close" bindtap="closeEdit">
+      <text>✕</text>
     </view>
   </view>
-
-  <!-- Check-in Popup -->
-  <view wx:if="{{checkInVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeCheckIn">
-    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
-      <view class="popup-header">
-        <text class="popup-title">打卡</text>
-        <text class="popup-close" bindtap="closeCheckIn">×</text>
+  <view class="form-fs-scroll-wrap">
+    <scroll-view scroll-y class="form-fs-body">
+      <view class="form-group">
+        <text class="form-label">餐厅名称 *</text>
+        <input class="form-input" value="{{editForm.name}}" data-field="name" bindinput="onEditInput" placeholder="请输入餐厅名称" />
       </view>
-      <scroll-view scroll-y class="popup-body">
-        <view class="form-group">
-          <text class="form-label">评分</text>
-          <view class="star-rating">
-            <block wx:for="{{5}}" wx:for-item="star" wx:key="*this">
-              <text class="star-btn {{star < checkInForm.rating ? 'star-filled' : ''}}" bindtap="onCheckInRating" data-rating="{{star + 1}}">★</text>
-            </block>
-          </view>
-        </view>
-        <view class="form-group">
-          <text class="form-label">消费金额</text>
-          <input class="form-input" type="digit" value="{{checkInForm.cost}}" data-field="cost" bindinput="onCheckInInput" placeholder="请输入消费金额" />
-        </view>
-        <view class="form-group">
-          <text class="form-label">到访日期</text>
-          <picker mode="date" value="{{checkInForm.visitDate}}" bindchange="onCheckInDateChange">
-            <view class="form-input picker-value">
-              <text>{{checkInForm.visitDate || '请选择日期'}}</text>
-            </view>
-          </picker>
-        </view>
-        <view class="form-group">
-          <text class="form-label">评论</text>
-          <textarea class="form-textarea" value="{{checkInForm.comment}}" data-field="comment" bindinput="onCheckInInput" placeholder="分享你的体验" />
-        </view>
-      </scroll-view>
-      <view class="form-actions">
-        <view class="btn btn-cancel" bindtap="closeCheckIn"><text>取消</text></view>
-        <view class="btn btn-primary" bindtap="handleCheckIn"><text>打卡</text></view>
+      <view class="form-group">
+        <text class="form-label">城市 *</text>
+        <input class="form-input" value="{{editForm.city}}" data-field="city" bindinput="onEditInput" placeholder="请输入城市" />
       </view>
-    </view>
-  </view>
-
-  <!-- Map Popup -->
-  <view wx:if="{{mapVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeMap">
-    <view class="popup-content popup-map" catchtap="stopPropagation">
-      <view class="popup-header">
-        <text class="popup-title">{{mapRestaurant.name}} - 地图</text>
-        <text class="popup-close" bindtap="closeMap">×</text>
+      <view class="form-group">
+        <text class="form-label">地址</text>
+        <input class="form-input" value="{{editForm.address}}" data-field="address" bindinput="onEditInput" placeholder="请输入地址" />
       </view>
-      <view class="popup-body">
-        <text class="map-address">{{mapRestaurant.address}}</text>
-        <map
-          class="map-view"
-          latitude="{{mapLatitude}}"
-          longitude="{{mapLongitude}}"
-          scale="14"
-          show-location
-          markers="{{[{id: 1, latitude: mapLatitude, longitude: mapLongitude, title: mapRestaurant.name}]}}"
-        />
+      <view class="form-group">
+        <text class="form-label">人均价格</text>
+        <input class="form-input" type="digit" value="{{editForm.avgPrice}}" data-field="avgPrice" bindinput="onEditInput" placeholder="请输入人均价格" />
       </view>
-    </view>
-  </view>
-
-  <!-- Tag Management Popup -->
-  <view wx:if="{{tagManageVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeTagManage">
-    <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
-      <view class="popup-header">
-        <text class="popup-title">管理标签</text>
-        <text class="popup-close" bindtap="closeTagManage">×</text>
+      <view class="form-group">
+        <text class="form-label">描述</text>
+        <textarea class="form-textarea" value="{{editForm.description}}" data-field="description" bindinput="onEditInput" placeholder="请输入描述" />
       </view>
-      <scroll-view scroll-y class="popup-body">
-        <view class="tag-add-row">
-          <input class="form-input tag-name-input" value="{{newTagName}}" bindinput="onNewTagNameInput" placeholder="新标签名称" />
-          <view class="color-preview" style="background: {{newTagColor}}" bindtap="toggleColorPicker"></view>
-          <view class="btn btn-primary btn-sm" bindtap="handleAddTag">
-            <text>添加</text>
-          </view>
-        </view>
-        <!-- Inline Color Picker -->
-        <view wx:if="{{colorPickerVisible}}" class="color-picker-inline">
-          <view class="color-picker-sv-pad" style="background: {{hueColor}}" catchtouchmove="onSVPadMove" catchtouchstart="onSVPadStart">
-            <view class="sv-pad-white"></view>
-            <view class="sv-pad-black"></view>
-            <view class="sv-picker" style="left: {{svLeft}}; top: {{svTop}}"></view>
-          </view>
-          <view class="color-picker-hue-wrap">
-            <view class="hue-bar" catchtouchmove="onHueMove" catchtouchstart="onHueStart">
-              <view class="hue-thumb" style="left: {{hueLeft}}"></view>
-            </view>
-          </view>
-          <view class="color-picker-hex-row">
-            <text class="hex-label">#</text>
-            <input class="hex-input" value="{{hexInput}}" bindinput="onHexInput" maxlength="6" />
-            <view class="color-picker-ok-btn" bindtap="confirmColorPick">
-              <text>确定</text>
-            </view>
-          </view>
-        </view>
-        <view class="color-presets">
-          <view
-            class="color-preset {{newTagColor === color ? 'active' : ''}}"
-            wx:for="{{presetColors}}"
-            wx:for-item="color"
-            wx:key="*this"
-            style="background: {{color}}"
-            bindtap="onSelectColor"
-            data-color="{{color}}"
-          ></view>
-        </view>
-        <view class="tag-list">
+      <view class="form-group">
+        <text class="form-label">推荐菜品</text>
+        <textarea class="form-textarea" value="{{editForm.recommendedDishes}}" data-field="recommendedDishes" bindinput="onEditInput" placeholder="请输入推荐菜品" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">标签</text>
+        <view class="tag-checkboxes">
           <block wx:for="{{allTags}}" wx:key="id">
-            <view class="tag-list-item">
-              <view class="tag-color-dot" style="background: {{item.color || '#CC8048'}}"></view>
-              <text class="tag-list-name">{{item.name}}</text>
-              <view class="tag-delete-btn" bindtap="handleDeleteTag" data-tag="{{item}}">
-                <text>×</text>
-              </view>
+            <view class="tag-checkbox {{editTagMap[item.id] ? 'checked' : ''}}" bindtap="onEditTagToggle" data-id="{{item.id}}">
+              <text class="checkbox-dot" style="background: {{editTagMap[item.id] ? (item.color || '#CC8048') : '#E0DAD2'}}"></text>
+              <text>{{item.name}}</text>
             </view>
           </block>
         </view>
-      </scroll-view>
-    </view>
+      </view>
+      <view class="form-group">
+        <text class="form-label">图片（最多3张）</text>
+        <view class="image-grid">
+          <view wx:for="{{editImageItems}}" wx:key="id" class="image-grid-item">
+            <image src="{{item.displayUrl}}" mode="aspectFill" />
+            <view class="image-grid-remove" bindtap="removeEditImage" data-id="{{item.id}}">×</view>
+          </view>
+          <view wx:if="{{editImageItems.length < 3}}" class="image-grid-item image-grid-add" bindtap="chooseEditImage">
+            <text class="upload-icon">+</text>
+            <text class="upload-text">添加</text>
+          </view>
+        </view>
+      </view>
+      <view style="height: 40rpx;"></view>
+      <view class="btn btn-cancel" bindtap="closeEdit"><text>取消</text></view>
+    <view class="btn btn-primary" bindtap="handleEditSubmit"><text>保存</text></view>
+    </scroll-view>
   </view>
 
-  <!-- Detail Overlay -->
-  <view class="detail-overlay {{detailVisible ? 'show' : ''}}">
-    <view class="detail-close">
-      <view class="detail-close-btn" bindtap="closeDetail">✕</view>
-      <text wx:if="{{detailData.visitCount > 0}}" class="detail-visit-count">已打卡 {{detailData.visitCount}} 次</text>
+</view>
+
+<!-- Check-in Popup -->
+<view wx:if="{{checkInVisible}}" class="form-fullscreen">
+  <view class="form-fs-head">
+    <text class="form-fs-title">打卡</text>
+    <view class="form-fs-close" bindtap="closeCheckIn">
+      <text>✕</text>
     </view>
-
-    <!-- Hero -->
-    <view class="detail-hero">
-      <image wx:if="{{detailData.heroImage}}" src="{{detailData.heroImage}}" mode="aspectFill" class="detail-hero-image" />
-      <view wx:else class="detail-hero-placeholder {{detailData.gradientClass}}">
-        <text style="font-size: 120rpx;">🍜</text>
-      </view>
-    </view>
-
-    <!-- Content -->
-    <view class="detail-content">
-      <view class="detail-name">{{detailData.name}}</view>
-
-      <view class="detail-cuisine">
-        <text>{{detailData.tags[0].name || '美食'}}</text>
-        <text wx:if="{{detailData.city}}"> · {{detailData.city}}</text>
-      </view>
-
-      <view class="detail-stats">
-        <view class="detail-stat">
-          <text class="val">{{detailData.avgRating || '-'}}</text>
-          <text class="lbl">评分</text>
-        </view>
-        <view class="detail-stat">
-          <text class="val">{{detailData.avgPrice ? '¥' + detailData.avgPrice : '-'}}</text>
-          <text class="lbl">人均</text>
-        </view>
-        <view class="detail-stat">
-          <text class="val">{{detailData.visitCount || 0}}</text>
-          <text class="lbl">打卡</text>
-        </view>
-      </view>
-
-      <!-- Recommended Dishes -->
-      <view wx:if="{{detailData.recommendedDishes}}" class="detail-section">
-        <view class="detail-section-title">推荐菜</view>
-        <view class="dish-pills">
-          <block wx:for="{{detailData.dishList}}" wx:key="*this">
-            <view class="dish-pill">{{item}}</view>
+  </view>
+  <view class="form-fs-scroll-wrap">
+    <scroll-view scroll-y class="form-fs-body">
+      <view class="form-group">
+        <text class="form-label">评分</text>
+        <view class="star-rating">
+          <block wx:for="{{5}}" wx:for-item="star" wx:key="*this">
+            <text class="star-btn {{star < checkInForm.rating ? 'star-filled' : ''}}" bindtap="onCheckInRating" data-rating="{{star + 1}}">★</text>
           </block>
         </view>
       </view>
-
-      <!-- Address -->
-      <view wx:if="{{detailData.address}}" class="detail-section">
-        <view class="detail-section-title">地址</view>
-        <view class="detail-address">{{detailData.address}}</view>
+      <view class="form-group">
+        <text class="form-label">消费金额</text>
+        <input class="form-input" type="digit" value="{{checkInForm.cost}}" data-field="cost" bindinput="onCheckInInput" placeholder="请输入消费金额" />
       </view>
-
-      <!-- Description -->
-      <view wx:if="{{detailData.description}}" class="detail-section">
-        <view class="detail-section-title">描述</view>
-        <view class="detail-note">{{detailData.description}}</view>
+      <view class="form-group">
+        <text class="form-label">到访日期</text>
+        <picker mode="date" value="{{checkInForm.visitDate}}" bindchange="onCheckInDateChange">
+          <view class="form-input picker-value">
+            <text>{{checkInForm.visitDate || '请选择日期'}}</text>
+          </view>
+        </picker>
       </view>
+      <view class="form-group">
+        <text class="form-label">评论</text>
+        <textarea class="form-textarea" value="{{checkInForm.comment}}" data-field="comment" bindinput="onCheckInInput" placeholder="分享你的体验" />
+      </view>
+      <view style="height: 40rpx;"></view>
+     
+        <view class="btn btn-cancel" bindtap="closeCheckIn"><text>取消</text></view>
+    <view class="btn btn-primary" bindtap="handleCheckIn"><text>打卡</text></view>
 
-      <!-- Visit History -->
-      <view wx:if="{{detailVisits.length > 0}}" class="detail-section">
-        <view class="detail-section-title">打卡记录</view>
-        <block wx:for="{{detailVisits}}" wx:key="id">
-          <view class="visit-item">
-            <view class="visit-header">
-              <text class="visit-rating">{{item.rating}} ★</text>
-              <text class="visit-date">{{item.visitDate}}</text>
-              <text wx:if="{{item.cost}}" class="visit-cost">¥{{item.cost}}</text>
+
+    </scroll-view>
+  </view>
+
+</view>
+
+<!-- Map Popup -->
+<view wx:if="{{mapVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeMap">
+  <view class="popup-content popup-map" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
+    <view class="popup-header">
+      <text class="popup-title">{{mapRestaurant.name}} - 地图</text>
+      <text class="popup-close" bindtap="closeMap">×</text>
+    </view>
+    <view class="popup-body">
+      <text class="map-address">{{mapRestaurant.address}}</text>
+      <map
+        class="map-view"
+        latitude="{{mapLatitude}}"
+        longitude="{{mapLongitude}}"
+        scale="14"
+        show-location
+        markers="{{[{id: 1, latitude: mapLatitude, longitude: mapLongitude, title: mapRestaurant.name}]}}"
+      />
+    </view>
+  </view>
+</view>
+
+<!-- Tag Management Popup -->
+<view wx:if="{{tagManageVisible}}" class="popup-overlay" catchtouchmove="preventTouchMove" bindtap="closeTagManage">
+  <view class="popup-content" catchtouchmove="preventTouchMove" catchtap="stopPropagation">
+    <view class="popup-header">
+      <text class="popup-title">管理标签</text>
+      <text class="popup-close" bindtap="closeTagManage">×</text>
+    </view>
+    <scroll-view scroll-y class="popup-body">
+      <view class="tag-add-row">
+        <input class="form-input tag-name-input" value="{{newTagName}}" bindinput="onNewTagNameInput" placeholder="新标签名称" />
+        <view class="color-preview" style="background: {{newTagColor}}" bindtap="toggleColorPicker"></view>
+        <view class="btn btn-primary btn-sm" bindtap="handleAddTag">
+          <text>添加</text>
+        </view>
+      </view>
+      <!-- Inline Color Picker -->
+      <view wx:if="{{colorPickerVisible}}" class="color-picker-inline">
+        <view class="color-picker-sv-pad" style="background: {{hueColor}}" catchtouchmove="onSVPadMove" catchtouchstart="onSVPadStart">
+          <view class="sv-pad-white"></view>
+          <view class="sv-pad-black"></view>
+          <view class="sv-picker" style="left: {{svLeft}}; top: {{svTop}}"></view>
+        </view>
+        <view class="color-picker-hue-wrap">
+          <view class="hue-bar" catchtouchmove="onHueMove" catchtouchstart="onHueStart">
+            <view class="hue-thumb" style="left: {{hueLeft}}"></view>
+          </view>
+        </view>
+        <view class="color-picker-hex-row">
+          <text class="hex-label">#</text>
+          <input class="hex-input" value="{{hexInput}}" bindinput="onHexInput" maxlength="6" />
+          <view class="color-picker-ok-btn" bindtap="confirmColorPick">
+            <text>确定</text>
+          </view>
+        </view>
+      </view>
+      <view class="color-presets">
+        <view
+          class="color-preset {{newTagColor === color ? 'active' : ''}}"
+          wx:for="{{presetColors}}"
+          wx:for-item="color"
+          wx:key="*this"
+          style="background: {{color}}"
+          bindtap="onSelectColor"
+          data-color="{{color}}"
+        ></view>
+      </view>
+      <view class="tag-list">
+        <block wx:for="{{allTags}}" wx:key="id">
+          <view class="tag-list-item">
+            <view class="tag-color-dot" style="background: {{item.color || '#CC8048'}}"></view>
+            <text class="tag-list-name">{{item.name}}</text>
+            <view class="tag-delete-btn" bindtap="handleDeleteTag" data-tag="{{item}}">
+              <text>×</text>
             </view>
-            <view wx:if="{{item.comment}}" class="visit-comment">{{item.comment}}</view>
           </view>
         </block>
       </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- Detail Overlay -->
+<view class="detail-overlay {{detailVisible ? 'show' : ''}}">
+  <view class="detail-close">
+    <view class="detail-close-btn" bindtap="closeDetail">✕</view>
+    <text wx:if="{{detailData.visitCount > 0}}" class="detail-visit-count">已打卡 {{detailData.visitCount}} 次</text>
+  </view>
+
+  <!-- Hero -->
+  <view class="detail-hero">
+    <image wx:if="{{detailData.heroImage}}" src="{{detailData.heroImage}}" mode="aspectFill" class="detail-hero-image" />
+    <view wx:else class="detail-hero-placeholder {{detailData.gradientClass}}">
+      <text style="font-size: 120rpx;">🍜</text>
     </view>
   </view>
 
+  <!-- Content -->
+  <view class="detail-content">
+    <view class="detail-name">{{detailData.name}}</view>
+
+    <view class="detail-cuisine">
+      <text>{{detailData.tags[0].name || '美食'}}</text>
+      <text wx:if="{{detailData.city}}"> · {{detailData.city}}</text>
+    </view>
+
+    <view class="detail-stats">
+      <view class="detail-stat">
+        <text class="val">{{detailData.avgRating || '-'}}</text>
+        <text class="lbl">评分</text>
+      </view>
+      <view class="detail-stat">
+        <text class="val">{{detailData.avgPrice ? '¥' + detailData.avgPrice : '-'}}</text>
+        <text class="lbl">人均</text>
+      </view>
+      <view class="detail-stat">
+        <text class="val">{{detailData.visitCount || 0}}</text>
+        <text class="lbl">打卡</text>
+      </view>
+    </view>
+
+    <!-- Recommended Dishes -->
+    <view wx:if="{{detailData.recommendedDishes}}" class="detail-section">
+      <view class="detail-section-title">推荐菜</view>
+      <view class="dish-pills">
+        <block wx:for="{{detailData.dishList}}" wx:key="*this">
+          <view class="dish-pill">{{item}}</view>
+        </block>
+      </view>
+    </view>
+
+    <!-- Address -->
+    <view wx:if="{{detailData.address}}" class="detail-section">
+      <view class="detail-section-title">地址</view>
+      <view class="detail-address">{{detailData.address}}</view>
+    </view>
+
+    <!-- Description -->
+    <view wx:if="{{detailData.description}}" class="detail-section">
+      <view class="detail-section-title">描述</view>
+      <view class="detail-note">{{detailData.description}}</view>
+    </view>
+
+    <!-- Visit History -->
+    <view wx:if="{{detailVisits.length > 0}}" class="detail-section">
+      <view class="detail-section-title">打卡记录</view>
+      <block wx:for="{{detailVisits}}" wx:key="id">
+        <view class="visit-item">
+          <view class="visit-header">
+            <text class="visit-rating">{{item.rating}} ★</text>
+            <text class="visit-date">{{item.visitDate}}</text>
+            <text wx:if="{{item.cost}}" class="visit-cost">¥{{item.cost}}</text>
+          </view>
+          <view wx:if="{{item.comment}}" class="visit-comment">{{item.comment}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
 </view>
 
 <!-- AI 对话弹窗 -->
