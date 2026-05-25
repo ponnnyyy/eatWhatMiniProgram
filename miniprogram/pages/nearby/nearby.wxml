@@ -1,0 +1,99 @@
+<view class="page-container page-enter">
+
+  <!-- Location Denied State -->
+  <view wx:if="{{locationDenied}}" class="state-center">
+    <view class="state-icon-wrap">
+      <text class="state-emoji">📍</text>
+    </view>
+    <text class="state-title">需要位置权限</text>
+    <text class="state-desc">请授权获取您的位置，以查找附近餐厅</text>
+    <view class="state-btn" bindtap="retryLocation">
+      <text>开启定位</text>
+    </view>
+  </view>
+
+  <!-- Loading State -->
+  <view wx:elif="{{loading}}" class="state-center">
+    <view class="loading-spinner"></view>
+    <text class="state-desc" style="margin-top: 24rpx;">正在获取附近餐厅...</text>
+  </view>
+
+  <!-- Main Content -->
+  <view wx:else class="nearby-content">
+
+    <!-- Map Section -->
+    <view class="map-section">
+      <map
+        class="nearby-map"
+        latitude="{{userLat}}"
+        longitude="{{userLng}}"
+        scale="{{mapScale}}"
+        markers="{{markers}}"
+        show-location
+        bindmarkertap="onMarkerTap"
+      />
+      <!-- Radius Bar overlay -->
+      <view class="radius-bar">
+        <picker mode="selector" range="{{radiusLabels}}" value="{{selectedRadiusIndex}}" bindchange="onRadiusChange">
+          <view class="radius-btn">
+            <text>{{radiusLabels[selectedRadiusIndex]}}</text>
+            <text class="arrow-down">▼</text>
+          </view>
+        </picker>
+        <text class="result-count">附近 {{restaurants.length}} 家餐厅</text>
+      </view>
+    </view>
+
+    <!-- Restaurant List -->
+    <scroll-view scroll-y class="nearby-list" scroll-into-view="{{scrollToId}}" scroll-with-animation>
+      <!-- Empty State -->
+      <view wx:if="{{restaurants.length === 0}}" class="state-center" style="padding-top: 80rpx;">
+        <view class="state-icon-wrap">
+          <text class="state-emoji">🗺️</text>
+        </view>
+        <text class="state-title">附近没有餐厅</text>
+        <text class="state-desc">试试扩大搜索范围</text>
+      </view>
+
+      <!-- Restaurant Cards -->
+      <view wx:for="{{restaurants}}" wx:key="id"
+        id="item-{{item.id}}"
+        class="nearby-card {{selectedId === item.id ? 'highlighted' : ''}}"
+        bindtap="onListItemTap" data-item="{{item}}">
+        <!-- Left: Image -->
+        <view class="nearby-card-img">
+          <image wx:if="{{item.images.length > 0}}" src="{{item.images[0]}}" mode="aspectFill" />
+          <view wx:else class="nearby-card-placeholder">
+            <text>🍜</text>
+          </view>
+        </view>
+        <!-- Right: Info -->
+        <view class="nearby-card-info">
+          <view class="nearby-card-header">
+            <text class="nearby-card-name">{{item.name}}</text>
+            <text class="nearby-card-distance">{{item.distanceText}}</text>
+          </view>
+          <view wx:if="{{item.visitCount > 0}}" class="nearby-card-rating">
+            <block wx:for="{{5}}" wx:for-item="star" wx:key="*this">
+              <text class="star {{star < item.avgRating ? 'star-filled' : 'star-empty'}}">★</text>
+            </block>
+            <text class="rating-count">({{item.visitCount}})</text>
+          </view>
+          <view class="nearby-card-meta">
+            <text wx:if="{{item.city}}" class="meta-badge">{{item.city}}</text>
+            <text wx:if="{{item.avgPrice}}" class="meta-price">¥{{item.avgPrice}}/人</text>
+          </view>
+          <view wx:if="{{item.tags && item.tags.length}}" class="nearby-card-tags">
+            <view wx:for="{{item.tags}}" wx:for-item="tag" wx:key="id"
+              class="mini-tag"
+              style="{{tag.tagStyle}}">
+              <text>{{tag.name}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view style="height: 40rpx;"></view>
+    </scroll-view>
+  </view>
+
+</view>

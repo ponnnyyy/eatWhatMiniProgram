@@ -1,6 +1,6 @@
 App<IAppOption>({
   globalData: {
-    baseUrl: 'http://localhost:9281',
+    baseUrl: 'http://10.202.198.13:9281',
     userInfo: undefined,
     token: undefined,
     loginReady: false,

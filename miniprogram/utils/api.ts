@@ -38,6 +38,10 @@ export function getRestaurantById(id: number) {
   return request({ url: `/api/restaurants/${id}`, method: 'GET' })
 }
 
+export function getNearbyRestaurants(latitude: number, longitude: number, radius: number = 5) {
+  return request({ url: `/api/restaurants/nearby?latitude=${latitude}&longitude=${longitude}&radius=${radius}`, method: 'GET' })
+}
+
 export function addRestaurant(data: any) {
   return request({ url: '/api/restaurants', method: 'POST', data })
 }

@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/restaurant/restaurant",
+    "pages/nearby/nearby",
     "pages/add/add",
     "pages/stats/stats",
     "pages/profile/profile"
@@ -23,6 +24,10 @@
         "text": "餐厅"
       },
       {
+        "pagePath": "pages/nearby/nearby",
+        "text": "附近"
+      },
+      {
         "pagePath": "pages/add/add",
         "text": "添加"
       },
@@ -38,10 +43,10 @@
   },
   "permission": {
     "scope.userLocation": {
-      "desc": "用于在地图上显示餐厅位置和选择位置"
+      "desc": "用于在地图上显示餐厅位置、选择位置和查找附近餐厅"
     }
   },
-  "requiredPrivateInfos": ["chooseLocation"],
+  "requiredPrivateInfos": ["chooseLocation", "getLocation"],
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
