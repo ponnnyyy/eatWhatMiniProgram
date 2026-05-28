@@ -47,7 +47,7 @@
     <!-- Restaurant List -->
     <scroll-view scroll-y class="nearby-list" scroll-into-view="{{scrollToId}}" scroll-with-animation>
       <!-- Empty State -->
-      <view wx:if="{{restaurants.length === 0}}" class="state-center" style="padding-top: 80rpx;">
+      <view wx:if="{{restaurants.length === 0}}" class="empty-state-center">
         <view class="state-icon-wrap">
           <text class="state-emoji">🗺️</text>
         </view>

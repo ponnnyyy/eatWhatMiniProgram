@@ -52,12 +52,30 @@ Page({
   },
 
   onLoad() {
-    this.loadTags()
+    const app = getApp<IAppOption>()
+    if (app.globalData.loginPromise) {
+      app.globalData.loginPromise.then(() => this.loadTags())
+    } else {
+      this.loadTags()
+    }
   },
 
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 })
+    }
+  },
+
+  onShareAppMessage() {
+    return {
+      title: '好味道 — 添加你喜欢的餐厅',
+      path: '/pages/add/add'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '好味道 — 添加你喜欢的餐厅'
     }
   },
 

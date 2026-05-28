@@ -9,6 +9,7 @@ interface IAppOption {
       openid: string
     }
     token?: string
+    role?: string
     loginReady?: boolean
     loginPromise?: Promise<void> | null
   }

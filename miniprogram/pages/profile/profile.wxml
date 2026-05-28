@@ -5,7 +5,7 @@
     <view wx:if="{{loading}}" class="empty-hint">加载中…</view>
     <view wx:elif="{{myRestaurants.length === 0}}" class="empty-hint">还没有创建过餐厅\n去「添加」页面创建第一家吧</view>
     <view wx:else class="restaurant-list">
-      <view class="restaurant-item" wx:for="{{myRestaurants}}" wx:key="id" data-id="{{item.id}}" bindtap="goToDetail">
+      <view class="restaurant-item" wx:for="{{myRestaurants}}" wx:key="id" data-item="{{item}}" bindtap="goToDetail">
         <view class="restaurant-info">
           <text class="restaurant-name">{{item.name}}</text>
           <text class="restaurant-meta">{{item.city || ''}} · {{item.avgPrice || '-'}} · ★ {{item.avgRating || '-'}}</text>

@@ -17,6 +17,17 @@
   text-align: center;
 }
 
+/* Empty state inside scroll-view (below map) */
+.empty-state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 500rpx);
+  padding: 0 80rpx;
+  text-align: center;
+}
+
 .state-icon-wrap {
   width: 120rpx;
   height: 120rpx;

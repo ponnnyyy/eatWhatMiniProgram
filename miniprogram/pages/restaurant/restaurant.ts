@@ -43,6 +43,8 @@ interface EditForm {
   description: string
   recommendedDishes: string
   selectedTagIds: number[]
+  latitude: number | null
+  longitude: number | null
 }
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -145,6 +147,7 @@ Page({
     editVisible: false,
     editForm: {} as EditForm,
     editImageItems: [] as Array<{ id: string; displayUrl: string; rawUrl?: string; localFile?: string }>,
+    editMarkers: [] as any[],
 
     checkInVisible: false,
     checkInForm: {
@@ -168,6 +171,7 @@ Page({
     presetColors: ['#CC8048', '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#e84393', '#636e72'],
 
     colorPickerVisible: false,
+    isAdmin: false,
     pickerHue: 15,
     pickerSat: 0.72,
     pickerVal: 0.76,
@@ -196,7 +200,12 @@ Page({
   },
 
   onLoad() {
-    this.loadData()
+    const app = getApp<IAppOption>()
+    if (app.globalData.loginPromise) {
+      app.globalData.loginPromise.then(() => this.loadData())
+    } else {
+      this.loadData()
+    }
   },
 
   onShow() {
@@ -205,7 +214,23 @@ Page({
     }
   },
 
+  onShareAppMessage() {
+    return {
+      title: '好味道 — 发现身边的美食',
+      path: '/pages/restaurant/restaurant'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '好味道 — 发现身边的美食'
+    }
+  },
+
   async loadData() {
+    const app = getApp<IAppOption>()
+    const isAdmin = app.globalData.role === 'ADMIN'
+    this.setData({ isAdmin })
     try {
       const [restaurantsRes, tagsRes] = await Promise.all([
         getRestaurants(),
@@ -220,6 +245,7 @@ Page({
         const tagBased = gradientClassForTags(tags)
         return {
           ...r,
+          canEdit: r.canEdit || false,
           images: parseImageUrls(r.imageUrls).map(getImageUrl),
           tags,
           gradientClass: tagBased || GRADIENT_CYCLE[index % GRADIENT_CYCLE.length]
@@ -298,6 +324,23 @@ Page({
 
   async openDetail(e: any) {
     const r: Restaurant = e.currentTarget.dataset.item
+    this._showDetail(r)
+  },
+
+  async openDetailById(id: number) {
+    // 确保数据已加载
+    if (this.data.restaurants.length === 0) {
+      await this.loadData()
+    }
+    const r = this.data.restaurants.find((r: Restaurant) => r.id === id)
+    if (!r) {
+      wx.showToast({ title: '餐厅未找到', icon: 'none' })
+      return
+    }
+    this._showDetail(r)
+  },
+
+  async _showDetail(r: Restaurant) {
     this.setData({
       detailVisible: true,
       detailData: {
@@ -345,7 +388,9 @@ Page({
       avgPrice: String(r.avgPrice || ''),
       description: r.description || '',
       recommendedDishes: r.recommendedDishes || '',
-      selectedTagIds: (r.tags || []).map(t => t.id)
+      selectedTagIds: (r.tags || []).map(t => t.id),
+      latitude: r.latitude || null,
+      longitude: r.longitude || null
     }
     const editTagMap: Record<number, boolean> = {}
     ;(r.tags || []).forEach(t => { editTagMap[t.id] = true })
@@ -359,11 +404,32 @@ Page({
         rawUrl: rawUrl
       }
     })
+    // 构建地图标记
+    const editMarkers: any[] = []
+    if (r.latitude && r.longitude) {
+      editMarkers.push({
+        id: 1,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        width: 28,
+        height: 28,
+        callout: {
+          content: r.name,
+          display: 'ALWAYS',
+          borderRadius: 8,
+          padding: 6,
+          bgColor: '#CC8048',
+          color: '#FFFFFF',
+          fontSize: 12
+        }
+      })
+    }
     this.setData({
       editVisible: true,
       editForm,
       editTagMap,
-      editImageItems
+      editImageItems,
+      editMarkers
     })
   },
 
@@ -396,6 +462,51 @@ Page({
     const editTagMap = { ...this.data.editTagMap }
     editTagMap[tagId] = idx <= -1
     this.setData({ 'editForm.selectedTagIds': selectedTagIds, editTagMap })
+  },
+
+  chooseEditLocation() {
+    wx.chooseLocation({
+      success: (res) => {
+        if (res.latitude && res.longitude) {
+          const editMarkers: any[] = [{
+            id: 1,
+            latitude: res.latitude,
+            longitude: res.longitude,
+            width: 28,
+            height: 28,
+            callout: {
+              content: res.name || '选择的位置',
+              display: 'ALWAYS',
+              borderRadius: 8,
+              padding: 6,
+              bgColor: '#CC8048',
+              color: '#FFFFFF',
+              fontSize: 12
+            }
+          }]
+          this.setData({
+            'editForm.latitude': res.latitude,
+            'editForm.longitude': res.longitude,
+            'editForm.address': res.address || this.data.editForm.address,
+            editMarkers
+          })
+        }
+      },
+      fail: (err: any) => {
+        if (err.errMsg && err.errMsg.indexOf('cancel') === -1) {
+          wx.showModal({
+            title: '提示',
+            content: '需要获取位置权限才能选择位置，请在设置中开启',
+            confirmText: '去设置',
+            success: (modalRes: any) => {
+              if (modalRes.confirm) {
+                wx.openSetting({})
+              }
+            }
+          })
+        }
+      }
+    })
   },
 
   chooseEditImage() {
@@ -452,7 +563,9 @@ Page({
         avgPrice: editForm.avgPrice,
         description: editForm.description,
         recommendedDishes: editForm.recommendedDishes,
-        imageUrls: allUrls.length > 0 ? JSON.stringify(allUrls) : null
+        imageUrls: allUrls.length > 0 ? JSON.stringify(allUrls) : null,
+        latitude: editForm.latitude,
+        longitude: editForm.longitude
       })
       await setRestaurantTags(editForm.id, editForm.selectedTagIds)
       wx.showToast({ title: '更新成功', icon: 'success' })

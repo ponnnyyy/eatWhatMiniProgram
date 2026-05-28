@@ -41,12 +41,30 @@ Page({
   },
 
   onLoad() {
-    this.loadData()
+    const app = getApp<IAppOption>()
+    if (app.globalData.loginPromise) {
+      app.globalData.loginPromise.then(() => this.loadData())
+    } else {
+      this.loadData()
+    }
   },
 
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 3 })
+    }
+  },
+
+  onShareAppMessage() {
+    return {
+      title: '好味道 — 我的美食打卡统计',
+      path: '/pages/stats/stats'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '好味道 — 我的美食打卡统计'
     }
   },
 

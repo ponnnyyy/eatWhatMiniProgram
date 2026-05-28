@@ -66,3 +66,43 @@
   text-align: center;
   padding: 40rpx 0;
 }
+
+/* Admin Token Box */
+.token-box {
+  background: var(--bg-surface);
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20rpx 24rpx;
+}
+
+.token-label {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.token-value {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.token-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: var(--text-primary);
+  font-family: monospace;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.token-copy {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 6rpx 20rpx;
+  border-radius: 100rpx;
+  font-weight: 500;
+}

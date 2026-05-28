@@ -40,7 +40,25 @@ Page({
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1 })
     }
-    this.loadLocation()
+    const app = getApp<IAppOption>()
+    if (app.globalData.loginPromise) {
+      app.globalData.loginPromise.then(() => this.loadLocation())
+    } else {
+      this.loadLocation()
+    }
+  },
+
+  onShareAppMessage() {
+    return {
+      title: '好味道 — 附近有哪些好吃的？',
+      path: '/pages/nearby/nearby'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '好味道 — 附近有哪些好吃的？'
+    }
   },
 
   loadLocation() {

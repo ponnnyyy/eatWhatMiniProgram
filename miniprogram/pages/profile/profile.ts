@@ -21,6 +21,19 @@ Page({
     }
   },
 
+  onShareAppMessage() {
+    return {
+      title: '好味道 — 发现身边的美食',
+      path: '/pages/restaurant/restaurant'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '好味道 — 发现身边的美食'
+    }
+  },
+
   async loadData() {
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo')
     this.setData({ loading: true })
@@ -47,13 +60,14 @@ Page({
   },
 
   goToDetail(e: any) {
-    const id = e.currentTarget.dataset.id
+    const item = e.currentTarget.dataset.item
+    if (!item) return
     wx.switchTab({
       url: '/pages/restaurant/restaurant',
       success: () => {
         const page = getCurrentPages().find(p => p.route === 'pages/restaurant/restaurant') as any
-        if (page && page.openDetail) {
-          page.openDetail(id)
+        if (page && page.openDetailById) {
+          page.openDetailById(item.id)
         }
       }
     })

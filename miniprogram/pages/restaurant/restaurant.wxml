@@ -23,7 +23,7 @@
       <text>共 {{filteredRestaurants.length}} 家餐厅</text>
     </view>
 
-    <view class="manage-tags-btn" bindtap="openTagManage">
+    <view wx:if="{{isAdmin}}" class="manage-tags-btn" bindtap="openTagManage">
       <text>管理标签</text>
     </view>
   </view>
@@ -102,13 +102,13 @@
               <view class="action-btn" catchtap="openCheckIn" data-item="{{item}}">
                 <text>打卡</text>
               </view>
-              <view class="action-btn" catchtap="openEdit" data-item="{{item}}">
+              <view wx:if="{{item.canEdit}}" class="action-btn" catchtap="openEdit" data-item="{{item}}">
                 <text>编辑</text>
               </view>
               <view class="action-btn" catchtap="openMap" data-item="{{item}}">
                 <text>地图</text>
               </view>
-              <view class="action-btn action-btn-danger" catchtap="confirmDelete" data-item="{{item}}">
+              <view wx:if="{{item.canEdit}}" class="action-btn action-btn-danger" catchtap="confirmDelete" data-item="{{item}}">
                 <text>删除</text>
               </view>
             </view>
@@ -154,7 +154,26 @@
       </view>
       <view class="form-group">
         <text class="form-label">地址</text>
-        <input class="form-input" value="{{editForm.address}}" data-field="address" bindinput="onEditInput" placeholder="请输入地址" />
+        <view class="location-input-row">
+          <input class="form-input location-input" value="{{editForm.address}}" data-field="address" bindinput="onEditInput" placeholder="请输入或选择地址" />
+          <view class="location-btn" bindtap="chooseEditLocation">
+            <text>📍 选择位置</text>
+          </view>
+        </view>
+        <view wx:if="{{editForm.latitude}}" class="coord-display">
+          <text class="coord-badge">{{editForm.latitude.toFixed(4)}}, {{editForm.longitude.toFixed(4)}}</text>
+        </view>
+        <map
+          wx:if="{{editForm.latitude}}"
+          class="edit-map-preview"
+          latitude="{{editForm.latitude}}"
+          longitude="{{editForm.longitude}}"
+          markers="{{editMarkers}}"
+          scale="16"
+          show-location
+          enable-zoom
+          enable-scroll
+        />
       </view>
       <view class="form-group">
         <text class="form-label">人均价格</text>
