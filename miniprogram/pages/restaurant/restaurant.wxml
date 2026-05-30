@@ -77,7 +77,7 @@
             <text wx:if="{{item.description}}" class="card-desc">{{item.description}}</text>
 
             <view class="card-meta">
-              <text wx:if="{{item.city}}" class="meta-city">{{item.city}}</text>
+              <text wx:if="{{item.province || item.city}}" class="meta-city">{{item.province ? item.province + ' ' : ''}}{{item.city}}</text>
               <text wx:if="{{item.address}}" class="meta-address">{{item.address}}</text>
             </view>
 
@@ -149,11 +149,16 @@
         <input class="form-input" value="{{editForm.name}}" data-field="name" bindinput="onEditInput" placeholder="请输入餐厅名称" />
       </view>
       <view class="form-group">
-        <text class="form-label">城市 *</text>
-        <input class="form-input" value="{{editForm.city}}" data-field="city" bindinput="onEditInput" placeholder="请输入城市" />
+        <text class="form-label">省份/城市(选址后自动填充)</text>
+        <picker mode="region" bindchange="onEditRegionChange" value="{{editRegion}}">
+          <view class="region-picker-display">
+            <text class="{{editRegionDisplay ? '' : 'placeholder'}}">{{editRegionDisplay || '请选择省份和城市'}}</text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
       </view>
       <view class="form-group">
-        <text class="form-label">地址</text>
+        <text class="form-label">地址(选址后自动填充)</text>
         <view class="location-input-row">
           <input class="form-input location-input" value="{{editForm.address}}" data-field="address" bindinput="onEditInput" placeholder="请输入或选择地址" />
           <view class="location-btn" bindtap="chooseEditLocation">
@@ -272,7 +277,10 @@
       <text class="popup-close" bindtap="closeMap">×</text>
     </view>
     <view class="popup-body">
-      <text class="map-address">{{mapRestaurant.address}}</text>
+      <view class="map-info-bar">
+        <text class="map-address">{{mapRestaurant.address}}</text>
+        <view class="map-nav-btn" bindtap="navigateToRestaurant">导航</view>
+      </view>
       <map
         class="map-view"
         latitude="{{mapLatitude}}"
@@ -367,7 +375,7 @@
 
     <view class="detail-cuisine">
       <text>{{detailData.tags[0].name || '美食'}}</text>
-      <text wx:if="{{detailData.city}}"> · {{detailData.city}}</text>
+      <text wx:if="{{detailData.province || detailData.city}}"> · {{detailData.province ? detailData.province + ' ' : ''}}{{detailData.city}}</text>
     </view>
 
     <view class="detail-stats">
@@ -479,3 +487,13 @@
     </view>
   </view>
 </view>
+
+<!-- 隐形返回拦截器：弹框打开时激活，捕获真机返回手势关闭弹框而非退出小程序 -->
+<page-container
+  show="{{backGuardActive}}"
+  position="center"
+  overlay="{{false}}"
+  duration="{{0}}"
+  bind:leave="onBackGuardLeave"
+  custom-style="position:fixed;top:-9999px;left:-9999px;width:0;height:0;overflow:hidden"
+/>

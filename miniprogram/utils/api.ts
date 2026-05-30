@@ -62,7 +62,19 @@ export function uploadImage(filePath: string): Promise<{ data: ApiResponse<{ url
       name: 'file',
       header: getAuthHeader(),
       success: (res) => {
-        resolve({ data: JSON.parse(res.data) })
+        if (res.statusCode === 413) {
+          reject(new Error('图片太大，请压缩后重试'))
+          return
+        }
+        if (res.statusCode === 401 || res.statusCode === 403) {
+          reject(new Error('登录已过期，请重新打开小程序'))
+          return
+        }
+        try {
+          resolve({ data: JSON.parse(res.data) })
+        } catch (e) {
+          reject(new Error('上传失败'))
+        }
       },
       fail: reject
     })

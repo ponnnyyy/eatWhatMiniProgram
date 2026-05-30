@@ -82,7 +82,7 @@
   display: flex;
   flex-direction: column;
   gap: 24rpx;
-  padding: 0 40rpx;
+  padding: 0 40rpx 32rpx;
 }
 
 .restaurant-card {
@@ -417,7 +417,7 @@
 
 .popup-map .popup-body {
   height: auto;
-  max-height: 50vh;
+  max-height: 70vh;
   overflow: visible;
 }
 
@@ -761,11 +761,36 @@
 }
 
 /* Map */
+.map-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
 .map-address {
   font-size: 26rpx;
   color: var(--text-secondary);
-  margin-bottom: 20rpx;
-  display: block;
+  flex: 1;
+  margin-right: 20rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-nav-btn {
+  flex-shrink: 0;
+  padding: 10rpx 28rpx;
+  background: var(--accent);
+  color: var(--bg-surface);
+  text-align: center;
+  border-radius: 100rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.map-nav-btn:active {
+  background: var(--accent-hover);
 }
 
 .map-view {
@@ -1520,4 +1545,30 @@
 
 .ai-review-btn:active {
   opacity: 0.7;
+}
+
+/* Region Picker */
+.region-picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--bg-page);
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18rpx 24rpx;
+  font-size: 28rpx;
+  min-height: 84rpx;
+  box-sizing: border-box;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.region-picker-display .placeholder {
+  color: var(--text-tertiary);
+}
+
+.picker-arrow {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
 }

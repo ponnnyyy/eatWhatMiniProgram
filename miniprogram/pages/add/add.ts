@@ -8,6 +8,7 @@ interface TagItem {
 
 interface FormData {
   name: string
+  province: string
   city: string
   address: string
   avgPrice: string
@@ -31,6 +32,7 @@ Page({
   data: {
     form: {
       name: '',
+      province: '',
       city: '',
       address: '',
       avgPrice: '',
@@ -41,6 +43,8 @@ Page({
       imageUrl: '',
       tagIds: [] as number[]
     } as FormData,
+    region: [] as string[],
+    regionDisplay: '',
     allTags: [] as TagItem[],
     selectedTagMap: {} as Record<number, boolean>,
     imagePreviews: [] as string[],
@@ -118,6 +122,22 @@ Page({
     this.setData({ 'form.tagIds': tagIds, selectedTagMap })
   },
 
+  stripSuffix(s: string) {
+    return (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+  },
+
+  onRegionChange(e: WechatMiniprogram.PickerChange) {
+    const values = e.detail.value as string[]
+    const province = this.stripSuffix(values[0] || '')
+    const city = this.stripSuffix(values[1] || '')
+    this.setData({
+      'form.province': province,
+      'form.city': city,
+      region: values as string[],
+      regionDisplay: province && city ? province + ' ' + city : province || city || ''
+    })
+  },
+
   chooseImage() {
     const remaining = 3 - this.data.imageFiles.length
     if (remaining <= 0) {
@@ -166,10 +186,37 @@ Page({
               fontSize: 14
             }
           }]
+
+          // 从 address 解析省份和城市
+          let province = ''
+          let city = ''
+          if (res.address) {
+            const match = res.address.match(/^(.+?(?:省|自治区|特别行政区))?(.+?(?:市|地区|州|盟))/)
+            if (match) {
+              if (match[1]) {
+                province = this.stripSuffix(match[1])
+              }
+              if (match[2]) {
+                city = this.stripSuffix(match[2])
+              }
+              // 直辖市处理
+              if (!match[1] && match[2]) {
+                const municipalities = ['北京', '天津', '上海', '重庆']
+                if (municipalities.includes(city)) {
+                  province = city
+                }
+              }
+            }
+          }
+
+          const regionDisplay = province && city ? province + ' ' + city : province || city || ''
           this.setData({
             'form.latitude': res.latitude,
             'form.longitude': res.longitude,
             'form.address': res.address || '',
+            'form.province': province,
+            'form.city': city,
+            regionDisplay: regionDisplay,
             markers: markers
           })
         }
@@ -215,6 +262,7 @@ Page({
 
       const restaurantData = {
         name: form.name.trim(),
+        province: form.province.trim() || null,
         city: form.city.trim() || null,
         address: form.address.trim() || null,
         avgPrice: form.avgPrice || null,
@@ -239,9 +287,9 @@ Page({
       } else {
         wx.showToast({ title: (res.data && res.data.message) || '添加失败', icon: 'none' })
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('添加餐厅失败:', err)
-      wx.showToast({ title: '网络错误，请稍后重试', icon: 'none' })
+      wx.showToast({ title: err.message || '网络错误，请稍后重试', icon: 'none' })
     } finally {
       this.setData({ submitting: false })
     }
@@ -251,6 +299,7 @@ Page({
     this.setData({
       form: {
         name: '',
+        province: '',
         city: '',
         address: '',
         avgPrice: '',
@@ -261,6 +310,8 @@ Page({
         imageUrl: '',
         tagIds: []
       },
+      region: [],
+      regionDisplay: '',
       selectedTagMap: {},
       imagePreviews: [],
       imageFiles: [],

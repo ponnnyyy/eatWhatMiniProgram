@@ -8,7 +8,7 @@
       <view class="restaurant-item" wx:for="{{myRestaurants}}" wx:key="id" data-item="{{item}}" bindtap="goToDetail">
         <view class="restaurant-info">
           <text class="restaurant-name">{{item.name}}</text>
-          <text class="restaurant-meta">{{item.city || ''}} · {{item.avgPrice || '-'}} · ★ {{item.avgRating || '-'}}</text>
+          <text class="restaurant-meta">{{item.province ? item.province + ' ' : ''}}{{item.city || ''}} · {{item.avgPrice || '-'}} · ★ {{item.avgRating || '-'}}</text>
         </view>
         <text class="restaurant-arrow">›</text>
       </view>

@@ -19,34 +19,36 @@
       />
     </view>
 
-    <!-- 地市 -->
+    <!-- 选择位置 -->
     <view class="form-item">
-      <text class="form-label">地市</text>
-      <input
-        class="form-input"
-        placeholder="请输入城市"
-        value="{{form.city}}"
-        data-field="city"
-        bindinput="onInputChange"
-      />
+      <text class="form-label">选择位置</text>
+      <button class="location-btn full-width" bindtap="chooseLocation">
+        <text class="location-icon">📍</text>
+        <text>选择位置</text>
+      </button>
     </view>
 
-    <!-- 地址 + 选择位置 -->
-    <view class="form-item location-section">
-      <text class="form-label">地址</text>
-      <view class="location-input-row">
-        <input
-          class="form-input location-input"
-          placeholder="请输入详细地址"
-          value="{{form.address}}"
-          data-field="address"
-          bindinput="onInputChange"
-        />
-        <button class="location-btn" bindtap="chooseLocation">
-          <text class="location-icon">📍</text>
-          <text>选择位置</text>
-        </button>
-      </view>
+    <!-- 省份/城市 -->
+    <view class="form-item">
+      <text class="form-label">省份/城市(选址后自动填充)</text>
+      <picker mode="region" bindchange="onRegionChange" value="{{region}}">
+        <view class="region-picker-display">
+          <text class="{{regionDisplay ? '' : 'placeholder'}}">{{regionDisplay || '请选择省份和城市'}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 地址 -->
+    <view class="form-item">
+      <text class="form-label">地址(选址后自动填充)</text>
+      <input
+        class="form-input"
+        placeholder="请输入详细地址"
+        value="{{form.address}}"
+        data-field="address"
+        bindinput="onInputChange"
+      />
     </view>
 
     <!-- 坐标显示 -->

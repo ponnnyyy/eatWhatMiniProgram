@@ -4,6 +4,7 @@ import { getImageUrl, parseImageUrls } from '../../utils/util'
 interface Restaurant {
   id: number
   name: string
+  province: string
   city: string
   address: string
   avgPrice: string
@@ -37,6 +38,7 @@ interface CheckInForm {
 interface EditForm {
   id: number
   name: string
+  province: string
   city: string
   address: string
   avgPrice: string
@@ -146,6 +148,8 @@ Page({
 
     editVisible: false,
     editForm: {} as EditForm,
+    editRegion: [] as string[],
+    editRegionDisplay: '',
     editImageItems: [] as Array<{ id: string; displayUrl: string; rawUrl?: string; localFile?: string }>,
     editMarkers: [] as any[],
 
@@ -196,7 +200,11 @@ Page({
     aiRecMessages: [] as Array<{ role: string; content: string; recommendations?: any[] }>,
     aiOverlayVisible: false,
     aiReviewLoading: false,
-    aiKbHeight: 0
+    aiKbHeight: 0,
+
+    // 返回手势拦截守卫
+    backGuardActive: false,
+    dataLoaded: false
   },
 
   onLoad() {
@@ -211,6 +219,32 @@ Page({
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 })
+    }
+    // 非首次进入时刷新数据（从添加页返回等情况）
+    if (this.data.dataLoaded) {
+      this.loadData()
+    }
+  },
+
+  // page-container 返回手势拦截回调
+  onBackGuardLeave() {
+    // 返回手势触发了 page-container 关闭，现在关闭最上层的弹框
+    if (this.data.editVisible) { this.closeEdit(); return }
+    if (this.data.checkInVisible) { this.closeCheckIn(); return }
+    if (this.data.tagManageVisible) { this.closeTagManage(); return }
+    if (this.data.mapVisible) { this.closeMap(); return }
+    if (this.data.detailVisible) { this.closeDetail(); return }
+    if (this.data.aiOverlayVisible) { this.closeAiOverlay(); return }
+  },
+
+  // 检查是否有弹框打开，有则激活返回守卫
+  _syncBackGuard() {
+    const { editVisible, checkInVisible, tagManageVisible, mapVisible, detailVisible, aiOverlayVisible } = this.data
+    const anyOpen = editVisible || checkInVisible || tagManageVisible || mapVisible || detailVisible || aiOverlayVisible
+    if (anyOpen && !this.data.backGuardActive) {
+      this.setData({ backGuardActive: true })
+    } else if (!anyOpen && this.data.backGuardActive) {
+      this.setData({ backGuardActive: false })
     }
   },
 
@@ -255,7 +289,7 @@ Page({
       const cities = [...new Set(restaurants.map((r: Restaurant) => r.city).filter(Boolean))] as string[]
       const cityRange = ['全部城市', ...cities]
       const tagRange = [{ name: '全部标签', id: 0 }, ...allTags]
-      this.setData({ restaurants, allTags, cities, cityRange, tagRange })
+      this.setData({ restaurants, allTags, cities, cityRange, tagRange, dataLoaded: true })
       this.applyFilters()
     } catch (e) {
       wx.showToast({ title: '加载失败', icon: 'error' })
@@ -343,6 +377,7 @@ Page({
   async _showDetail(r: Restaurant) {
     this.setData({
       detailVisible: true,
+      backGuardActive: true,
       detailData: {
         ...r,
         heroImage: r.images && r.images.length > 0 ? r.images[0] : '',
@@ -364,6 +399,7 @@ Page({
 
   closeDetail() {
     this.setData({ detailVisible: false })
+    this._syncBackGuard()
   },
 
   previewImage(e: any) {
@@ -383,6 +419,7 @@ Page({
     const editForm: EditForm = {
       id: r.id,
       name: r.name,
+      province: r.province || '',
       city: r.city,
       address: r.address,
       avgPrice: String(r.avgPrice || ''),
@@ -424,17 +461,43 @@ Page({
         }
       })
     }
+    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+    const provinceName = stripS(r.province || '')
+    const cityName = stripS(r.city || '')
+    const editRegionDisplay = provinceName && cityName ? provinceName + ' ' + cityName : provinceName || cityName || ''
+    // 微信 region picker 需要["广东省","珠海市","香洲区"]格式，但我们只知道名称，无法反推带后缀的完整值
+    // 这里用空数组让 picker 不预选，只显示文本
+    const editRegion: string[] = []
+
     this.setData({
       editVisible: true,
+      backGuardActive: true,
       editForm,
+      editRegion,
+      editRegionDisplay,
       editTagMap,
       editImageItems,
       editMarkers
     })
   },
 
+  onEditRegionChange(e: WechatMiniprogram.PickerChange) {
+    const values = e.detail.value as string[]
+    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+    const province = stripS(values[0] || '')
+    const city = stripS(values[1] || '')
+    const display = province && city ? province + ' ' + city : province || city || ''
+    this.setData({
+      'editForm.province': province,
+      'editForm.city': city,
+      editRegion: values as string[],
+      editRegionDisplay: display
+    })
+  },
+
   closeEdit() {
-    this.setData({ editVisible: false })
+    this.setData({ editVisible: false, editRegionDisplay: '' })
+    this._syncBackGuard()
   },
 
   preventTouchMove() {
@@ -484,10 +547,37 @@ Page({
               fontSize: 12
             }
           }]
+          // 从 address 解析省份和城市
+          let province = ''
+          let city = ''
+          const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+          if (res.address) {
+            const match = res.address.match(/^(.+?(?:省|自治区|特别行政区))?(.+?(?:市|地区|州|盟))/)
+            if (match) {
+              if (match[1]) {
+                province = stripS(match[1])
+              }
+              if (match[2]) {
+                city = stripS(match[2])
+              }
+              // 直辖市处理
+              if (!match[1] && match[2]) {
+                const municipalities = ['北京', '天津', '上海', '重庆']
+                if (municipalities.includes(city)) {
+                  province = city
+                }
+              }
+            }
+          }
+
+          const editRegionDisplay = province && city ? province + ' ' + city : province || city || ''
           this.setData({
             'editForm.latitude': res.latitude,
             'editForm.longitude': res.longitude,
             'editForm.address': res.address || this.data.editForm.address,
+            'editForm.province': province,
+            'editForm.city': city,
+            editRegionDisplay,
             editMarkers
           })
         }
@@ -558,6 +648,7 @@ Page({
       const allUrls = [...existingUrls, ...newUrls]
       await updateRestaurant(editForm.id, {
         name: editForm.name,
+        province: editForm.province,
         city: editForm.city,
         address: editForm.address,
         avgPrice: editForm.avgPrice,
@@ -570,9 +661,10 @@ Page({
       await setRestaurantTags(editForm.id, editForm.selectedTagIds)
       wx.showToast({ title: '更新成功', icon: 'success' })
       this.setData({ editVisible: false })
+      this._syncBackGuard()
       this.loadData()
-    } catch (e) {
-      wx.showToast({ title: '更新失败', icon: 'error' })
+    } catch (e: any) {
+      wx.showToast({ title: e.message || '更新失败', icon: 'error' })
     }
   },
 
@@ -582,6 +674,7 @@ Page({
     const today = new Date().toISOString().slice(0, 10)
     this.setData({
       checkInVisible: true,
+      backGuardActive: true,
       checkInRestaurantId: r.id,
       checkInForm: { rating: 0, cost: '', visitDate: today, comment: '' }
     })
@@ -589,6 +682,7 @@ Page({
 
   closeCheckIn() {
     this.setData({ checkInVisible: false })
+    this._syncBackGuard()
   },
 
   onCheckInRating(e: any) {
@@ -620,6 +714,7 @@ Page({
       })
       wx.showToast({ title: '打卡成功！', icon: 'success' })
       this.setData({ checkInVisible: false })
+      this._syncBackGuard()
       this.loadData()
     } catch (e) {
       wx.showToast({ title: '打卡失败', icon: 'error' })
@@ -635,6 +730,7 @@ Page({
     }
     this.setData({
       mapVisible: true,
+      backGuardActive: true,
       mapRestaurant: r,
       mapLatitude: r.latitude,
       mapLongitude: r.longitude
@@ -643,6 +739,22 @@ Page({
 
   closeMap() {
     this.setData({ mapVisible: false })
+    this._syncBackGuard()
+  },
+
+  navigateToRestaurant() {
+    const r = this.data.mapRestaurant
+    if (!r || !r.latitude) {
+      wx.showToast({ title: '该餐厅暂无位置信息', icon: 'none' })
+      return
+    }
+    wx.openLocation({
+      latitude: r.latitude,
+      longitude: r.longitude,
+      name: r.name || '',
+      address: r.address || '',
+      scale: 16
+    })
   },
 
   // Delete
@@ -671,11 +783,12 @@ Page({
 
   // Tag management
   openTagManage() {
-    this.setData({ tagManageVisible: true, newTagName: '', newTagColor: '#CC8048' })
+    this.setData({ tagManageVisible: true, backGuardActive: true, newTagName: '', newTagColor: '#CC8048' })
   },
 
   closeTagManage() {
     this.setData({ tagManageVisible: false, colorPickerVisible: false })
+    this._syncBackGuard()
   },
 
   onNewTagNameInput(e: any) {
@@ -847,11 +960,12 @@ Page({
 
   // AI 智能推荐
   openAiOverlay() {
-    this.setData({ aiOverlayVisible: true })
+    this.setData({ aiOverlayVisible: true, backGuardActive: true })
   },
 
   closeAiOverlay() {
     this.setData({ aiOverlayVisible: false, aiKbHeight: 0 })
+    this._syncBackGuard()
   },
 
   onAiKbShow(e: any) {

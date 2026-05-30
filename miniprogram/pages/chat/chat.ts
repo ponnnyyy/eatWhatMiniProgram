@@ -58,7 +58,7 @@ Page({
         history.push({ role: 'user', content: msg.content })
       } else if (msg.role === 'ai') {
         if (msg.recommendations && msg.recommendations.length > 0) {
-          const summary = msg.recommendations.map((r: any) => `推荐了${r.name}(${r.city})：${r.reason}`).join('；')
+          const summary = msg.recommendations.map((r: any) => `推荐了${r.name}(${[r.province, r.city].filter(Boolean).join(' ')})：${r.reason}`).join('；')
           history.push({ role: 'assistant', content: summary })
         } else if (msg.content) {
           history.push({ role: 'assistant', content: msg.content })

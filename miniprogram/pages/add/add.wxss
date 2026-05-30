@@ -112,6 +112,37 @@
   transform: scale(0.97);
 }
 
+.location-btn.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Region Picker */
+.region-picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--bg-page);
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18rpx 24rpx;
+  font-size: 28rpx;
+  min-height: 84rpx;
+  box-sizing: border-box;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.region-picker-display .placeholder {
+  color: var(--text-tertiary);
+}
+
+.picker-arrow {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+}
+
 /* Coordinate Display */
 .coord-display {
   display: flex;

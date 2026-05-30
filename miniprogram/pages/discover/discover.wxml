@@ -18,7 +18,7 @@
       <text class="result-badge">今日推荐</text>
       <text class="result-name">{{result.name}}</text>
       <view class="result-meta">
-        <text>{{result.city}} · ¥{{result.avgPrice}}/人</text>
+        <text>{{result.province ? result.province + ' ' : ''}}{{result.city}} · ¥{{result.avgPrice}}/人</text>
       </view>
       <view class="result-reason" wx:if="{{result.recommendReason}}">
         <text>"{{result.recommendReason}}"</text>

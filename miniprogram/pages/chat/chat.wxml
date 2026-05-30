@@ -56,7 +56,7 @@
                   <text wx:if="{{rec.avgPrice}}" class="rec-price">¥{{rec.avgPrice}}/人</text>
                 </view>
                 <view wx:if="{{rec.city || rec.address}}" class="rec-location">
-                  <text wx:if="{{rec.city}}" class="rec-city">{{rec.city}}</text>
+                  <text wx:if="{{rec.city}}" class="rec-city">{{rec.province ? rec.province + ' ' : ''}}{{rec.city}}</text>
                   <text wx:if="{{rec.address}}" class="rec-address">{{rec.address}}</text>
                 </view>
                 <text wx:if="{{rec.description}}" class="rec-desc">{{rec.description}}</text>

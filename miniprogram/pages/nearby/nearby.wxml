@@ -80,7 +80,7 @@
             <text class="rating-count">({{item.visitCount}})</text>
           </view>
           <view class="nearby-card-meta">
-            <text wx:if="{{item.city}}" class="meta-badge">{{item.city}}</text>
+            <text wx:if="{{item.city}}" class="meta-badge">{{item.province ? item.province + ' ' : ''}}{{item.city}}</text>
             <text wx:if="{{item.avgPrice}}" class="meta-price">¥{{item.avgPrice}}/人</text>
           </view>
           <view wx:if="{{item.tags && item.tags.length}}" class="nearby-card-tags">
