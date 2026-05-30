@@ -1067,7 +1067,8 @@
   flex: 1;
   padding: 48rpx 40rpx 80rpx;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* name: 28px bold, margin-bottom 4px → 8rpx */
@@ -1159,17 +1160,11 @@
   color: var(--text-primary);
 }
 
-/* note: padding 16px, font 14px, line-height 1.7 */
+/* note: 纯文本描述 */
 .detail-note {
-  background: var(--bg-surface);
-  border-radius: var(--radius-md);
-  border: 1rpx solid var(--border);
-  padding: 32rpx;
   font-size: 28rpx;
-  line-height: 1.7;
-  color: var(--text-primary);
-  font-style: italic;
-  box-sizing: border-box;
+  line-height: 1.8;
+  color: var(--text-secondary);
   word-break: break-word;
 }
 

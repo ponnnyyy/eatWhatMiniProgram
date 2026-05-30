@@ -51,12 +51,6 @@
       />
     </view>
 
-    <!-- 坐标显示 -->
-    <view wx:if="{{form.latitude}}" class="coord-display">
-      <text class="coord-badge">纬度: {{form.latitude}}</text>
-      <text class="coord-badge">经度: {{form.longitude}}</text>
-    </view>
-
     <!-- 地图预览 -->
     <map
       wx:if="{{form.latitude}}"

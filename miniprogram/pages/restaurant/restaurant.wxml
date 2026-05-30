@@ -165,9 +165,6 @@
             <text>📍 选择位置</text>
           </view>
         </view>
-        <view wx:if="{{editForm.latitude}}" class="coord-display">
-          <text class="coord-badge">{{editForm.latitude.toFixed(4)}}, {{editForm.longitude.toFixed(4)}}</text>
-        </view>
         <map
           wx:if="{{editForm.latitude}}"
           class="edit-map-preview"

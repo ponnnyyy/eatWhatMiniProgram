@@ -461,7 +461,7 @@ Page({
         }
       })
     }
-    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|自治州$|盟$/, '')
     const provinceName = stripS(r.province || '')
     const cityName = stripS(r.city || '')
     const editRegionDisplay = provinceName && cityName ? provinceName + ' ' + cityName : provinceName || cityName || ''
@@ -483,7 +483,7 @@ Page({
 
   onEditRegionChange(e: WechatMiniprogram.PickerChange) {
     const values = e.detail.value as string[]
-    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+    const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|自治州$|盟$/, '')
     const province = stripS(values[0] || '')
     const city = stripS(values[1] || '')
     const display = province && city ? province + ' ' + city : province || city || ''
@@ -550,7 +550,7 @@ Page({
           // 从 address 解析省份和城市
           let province = ''
           let city = ''
-          const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+          const stripS = (s: string) => (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|自治州$|盟$/, '')
           if (res.address) {
             const match = res.address.match(/^(.+?(?:省|自治区|特别行政区))?(.+?(?:市|地区|州|盟))/)
             if (match) {

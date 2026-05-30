@@ -1,6 +1,8 @@
 App<IAppOption>({
   globalData: {
-    baseUrl: 'http://10.202.198.13:9281',
+    //baseUrl: 'http://10.202.198.13:9281',
+    //baseUrl:'http://localhost:9281',
+    baseUrl:'http://192.168.1.4:9281',
     //baseUrl: 'https://117.72.38.38',
     //baseUrl:'https://chishenme.online',
     userInfo: undefined,

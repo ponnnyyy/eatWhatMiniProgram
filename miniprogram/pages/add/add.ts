@@ -123,7 +123,7 @@ Page({
   },
 
   stripSuffix(s: string) {
-    return (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|州$|盟$/, '')
+    return (s || '').replace(/省$|市$|自治区$|壮族$|回族$|维吾尔$|特别行政区$|地区$|自治州$|盟$/, '')
   },
 
   onRegionChange(e: WechatMiniprogram.PickerChange) {
